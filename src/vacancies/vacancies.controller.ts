@@ -31,6 +31,12 @@ export class VacanciesController {
     return this.vacanciesService.findOne(id, req.user.id);
   }
 
+  @Get(':id/history')
+  @UseGuards(JwtAuthGuard)
+  getHistory(@Param('id', ParseIntPipe) id: number, @Request() req) {
+    return this.vacanciesService.findHistory(id, req.user.id);
+  }
+
   @Post()
   @UseGuards(JwtAuthGuard)
   create(@Body() data: VacancyCreateDto, @Request() req) {

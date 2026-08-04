@@ -37,6 +37,28 @@ export class VacanciesService {
     return vacancy;
   }
 
+  async findHistory(vacancyId: number, userId: number) {
+    const vacancy = await this.prismaClient.vacancy.findFirst({
+      where: {
+        id: vacancyId,
+        userId,
+      },
+    });
+
+    if (!vacancy) {
+      throw new NotFoundException('Vacancy not found');
+    }
+
+    return this.prismaClient.vacancyHistory.findMany({
+      where: {
+        vacancyId,
+      },
+      orderBy: {
+        changedAt: 'desc',
+      },
+    });
+  }
+
   async update(id: number, data: VacancyUpdateDto, userId: number) {
     const vacancy = await this.prismaClient.vacancy.findFirst({
       where: {
@@ -49,11 +71,23 @@ export class VacanciesService {
       throw new NotFoundException('Vacancy not found');
     }
 
-    return await this.prismaClient.vacancy.update({
-      where: {
-        id,
-      },
-      data,
+    return this.prismaClient.$transaction(async (tx) => {
+      if (data.status && data.status !== vacancy.status) {
+        await tx.vacancyHistory.create({
+          data: {
+            oldStatus: vacancy.status,
+            newStatus: data.status,
+            vacancyId: vacancy.id,
+          },
+        });
+      }
+
+      return tx.vacancy.update({
+        where: {
+          id,
+        },
+        data,
+      });
     });
   }
 
