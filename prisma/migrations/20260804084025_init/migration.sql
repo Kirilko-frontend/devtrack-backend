@@ -5,28 +5,28 @@ CREATE TYPE "VacancyStatus" AS ENUM ('APPLIED', 'INTERVIEWING', 'OFFERED', 'REJE
 CREATE TYPE "InterviewType" AS ENUM ('PHONE', 'HR', 'TECHNICAL', 'FINAL');
 
 -- CreateTable
-CREATE TABLE "User" (
+CREATE TABLE "users" (
     "id" SERIAL NOT NULL,
     "email" TEXT NOT NULL,
     "password" TEXT NOT NULL,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
 
-    CONSTRAINT "User_pkey" PRIMARY KEY ("id")
+    CONSTRAINT "users_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
-CREATE TABLE "Company" (
+CREATE TABLE "companies" (
     "id" SERIAL NOT NULL,
     "name" TEXT NOT NULL,
     "website" TEXT,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
-    CONSTRAINT "Company_pkey" PRIMARY KEY ("id")
+    CONSTRAINT "companies_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
-CREATE TABLE "Vacancy" (
+CREATE TABLE "vacancies" (
     "id" SERIAL NOT NULL,
     "title" TEXT NOT NULL,
     "description" TEXT,
@@ -37,11 +37,11 @@ CREATE TABLE "Vacancy" (
     "userId" INTEGER NOT NULL,
     "companyId" INTEGER NOT NULL,
 
-    CONSTRAINT "Vacancy_pkey" PRIMARY KEY ("id")
+    CONSTRAINT "vacancies_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
-CREATE TABLE "Resume" (
+CREATE TABLE "resumes" (
     "id" SERIAL NOT NULL,
     "name" TEXT NOT NULL,
     "filePath" TEXT NOT NULL,
@@ -50,51 +50,51 @@ CREATE TABLE "Resume" (
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
 
-    CONSTRAINT "Resume_pkey" PRIMARY KEY ("id")
+    CONSTRAINT "resumes_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
-CREATE TABLE "Interview" (
+CREATE TABLE "interviews" (
     "id" SERIAL NOT NULL,
     "date" TIMESTAMP(3) NOT NULL,
     "notes" TEXT,
     "types" "InterviewType" NOT NULL,
     "vacancyId" INTEGER NOT NULL,
 
-    CONSTRAINT "Interview_pkey" PRIMARY KEY ("id")
+    CONSTRAINT "interviews_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
-CREATE TABLE "VacancyHistory" (
+CREATE TABLE "vacancy_histories" (
     "id" SERIAL NOT NULL,
     "oldStatus" "VacancyStatus",
     "newStatus" "VacancyStatus" NOT NULL,
     "vacancyId" INTEGER NOT NULL,
     "changedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
-    CONSTRAINT "VacancyHistory_pkey" PRIMARY KEY ("id")
+    CONSTRAINT "vacancy_histories_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateIndex
-CREATE UNIQUE INDEX "User_email_key" ON "User"("email");
+CREATE UNIQUE INDEX "users_email_key" ON "users"("email");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "Company_name_key" ON "Company"("name");
+CREATE UNIQUE INDEX "companies_name_key" ON "companies"("name");
 
 -- AddForeignKey
-ALTER TABLE "Vacancy" ADD CONSTRAINT "Vacancy_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "vacancies" ADD CONSTRAINT "vacancies_userId_fkey" FOREIGN KEY ("userId") REFERENCES "users"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "Vacancy" ADD CONSTRAINT "Vacancy_companyId_fkey" FOREIGN KEY ("companyId") REFERENCES "Company"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "vacancies" ADD CONSTRAINT "vacancies_companyId_fkey" FOREIGN KEY ("companyId") REFERENCES "companies"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "Resume" ADD CONSTRAINT "Resume_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "resumes" ADD CONSTRAINT "resumes_userId_fkey" FOREIGN KEY ("userId") REFERENCES "users"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "Resume" ADD CONSTRAINT "Resume_vacancyId_fkey" FOREIGN KEY ("vacancyId") REFERENCES "Vacancy"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+ALTER TABLE "resumes" ADD CONSTRAINT "resumes_vacancyId_fkey" FOREIGN KEY ("vacancyId") REFERENCES "vacancies"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "Interview" ADD CONSTRAINT "Interview_vacancyId_fkey" FOREIGN KEY ("vacancyId") REFERENCES "Vacancy"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "interviews" ADD CONSTRAINT "interviews_vacancyId_fkey" FOREIGN KEY ("vacancyId") REFERENCES "vacancies"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "VacancyHistory" ADD CONSTRAINT "VacancyHistory_vacancyId_fkey" FOREIGN KEY ("vacancyId") REFERENCES "Vacancy"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "vacancy_histories" ADD CONSTRAINT "vacancy_histories_vacancyId_fkey" FOREIGN KEY ("vacancyId") REFERENCES "vacancies"("id") ON DELETE RESTRICT ON UPDATE CASCADE;

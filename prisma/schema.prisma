@@ -34,6 +34,8 @@ model User{
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  @@map("users")
 }
 
 model Company {
@@ -45,6 +47,8 @@ model Company {
    vacancies Vacancy[]
 
   createdAt DateTime @default(now()) 
+
+  @@map("companies")  
 }
 
 model Vacancy {
@@ -66,6 +70,8 @@ model Vacancy {
 
   companyId Int
   company Company @relation(fields: [companyId], references: [id])
+
+  @@map("vacancies")
 }
 
 model Resume {
@@ -82,6 +88,8 @@ model Resume {
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  @@map("resumes")
 }
 
 model Interview {
@@ -93,6 +101,8 @@ model Interview {
 
   vacancyId Int
   vacancy Vacancy @relation(fields: [vacancyId], references: [id])
+
+  @@map("interviews")
 }
 
 
@@ -106,4 +116,6 @@ model VacancyHistory {
   vacancy Vacancy @relation(fields: [vacancyId], references: [id])
 
   changedAt DateTime @default(now())
+
+  @@map("vacancy_histories")
 }
