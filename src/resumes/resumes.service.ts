@@ -64,4 +64,19 @@ export class ResumesService {
       where: { id },
     });
   }
+
+  async getFile(id: number, userId: number, res: Response) {
+    const resume = await this.prisma.resume.findFirst({
+      where: {
+        id,
+        userId,
+      },
+    });
+
+    if (!resume) {
+      throw new NotFoundException('Resume not found');
+    }
+
+    return res.sendFile(join(process.cwd(), resume.filePath));
+  }
 }
