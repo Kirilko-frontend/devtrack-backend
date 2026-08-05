@@ -5,6 +5,7 @@ import { VacanciesModule } from './vacancies/vacancies.module';
 import { CompaniesModule } from './companies/companies.module';
 import { PrismaModule } from './prisma/prisma.module';
 import { ResumesModule } from './resumes/resumes.module';
+import { InterviewsModule } from './interview/interviews.module';
 
 @Module({
   imports: [
@@ -14,6 +15,7 @@ import { ResumesModule } from './resumes/resumes.module';
     CompaniesModule,
     PrismaModule,
     ResumesModule,
+    InterviewsModule,
   ],
 })
 export class AppModule {}
