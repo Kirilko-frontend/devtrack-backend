@@ -1,4 +1,7 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
+import { join } from 'path';
+import { Response } from 'express';
+
 import { PrismaService } from 'src/prisma/prisma.service';
 import { ResumeCreateDto, ResumeUpdateDto } from './dto';
 

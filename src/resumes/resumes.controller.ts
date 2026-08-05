@@ -14,10 +14,13 @@ import {
   BadRequestException,
   Res,
 } from '@nestjs/common';
+
+import type { Response } from 'express';
+import { FileInterceptor } from '@nestjs/platform-express';
+
 import { ResumesService } from './resumes.service';
 import { ResumeCreateDto, ResumeUpdateDto } from './dto';
 import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
-import { FileInterceptor } from '@nestjs/platform-express';
 
 @Controller('resumes')
 @UseGuards(JwtAuthGuard)
@@ -50,7 +53,7 @@ export class ResumesController {
 
   @Delete(':id')
   delete(@Param('id', ParseIntPipe) id: number, @Request() req) {
-    return this.resumesService.delete(id, req);
+    return this.resumesService.delete(id, req.user.id);
   }
 
   @Post('upload')
