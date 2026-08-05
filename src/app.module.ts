@@ -4,7 +4,6 @@ import { UsersModule } from './users/users.module';
 import { VacanciesModule } from './vacancies/vacancies.module';
 import { CompaniesModule } from './companies/companies.module';
 import { PrismaModule } from './prisma/prisma.module';
-import { VacancyhistoryModule } from './vacancyhistory/vacancyhistory.module';
 
 @Module({
   imports: [
@@ -13,7 +12,6 @@ import { VacancyhistoryModule } from './vacancyhistory/vacancyhistory.module';
     VacanciesModule,
     CompaniesModule,
     PrismaModule,
-    VacancyhistoryModule,
   ],
 })
 export class AppModule {}
