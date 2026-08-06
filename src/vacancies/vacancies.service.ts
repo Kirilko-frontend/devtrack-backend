@@ -92,14 +92,23 @@ export class VacanciesService {
   }
 
   async create(data: VacancyCreateDto, userId: number) {
-    return await this.prismaClient.vacancy.create({
+    const company = await this.prismaClient.company.findUnique({
+      where: {
+        id: data.companyId,
+      },
+    });
+
+    if (!company) {
+      throw new NotFoundException('Company not found');
+    }
+
+    return this.prismaClient.vacancy.create({
       data: {
         ...data,
         userId,
       },
     });
   }
-
   async delete(id: number, userId: number) {
     const vacancy = await this.prismaClient.vacancy.findFirst({
       where: {
