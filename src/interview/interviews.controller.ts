@@ -9,11 +9,15 @@ import {
   Request,
   ParseIntPipe,
   Req,
+  UseGuards,
 } from '@nestjs/common';
+import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
+
 import { InterviewsService } from './interviews.service';
 import { InterviewsCreateDto, InterviewsUpdateDto } from './dto';
 
 @Controller('interviews')
+@UseGuards(JwtAuthGuard)
 export class InterviewsController {
   constructor(private readonly interviewsService: InterviewsService) {}
 
