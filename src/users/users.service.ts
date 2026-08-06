@@ -67,6 +67,18 @@ export class UsersService {
       ...data,
     };
 
+    if (data.email) {
+      const existingUser = await this.prisma.user.findUnique({
+        where: {
+          email: data.email,
+        },
+      });
+
+      if (existingUser && existingUser.id !== id) {
+        throw new ConflictException('Email already exists');
+      }
+    }
+
     if (updateData.password) {
       updateData.password = await bcrypt.hash(updateData.password, 10);
     }
@@ -89,6 +101,26 @@ export class UsersService {
     if (!user) {
       throw new NotFoundException('User not found');
     }
+
+    await this.prisma.interview.deleteMany({
+      where: {
+        vacancy: {
+          userId: id,
+        },
+      },
+    });
+
+    await this.prisma.vacancy.deleteMany({
+      where: {
+        userId: id,
+      },
+    });
+
+    await this.prisma.resume.deleteMany({
+      where: {
+        userId: id,
+      },
+    });
 
     return this.prisma.user.delete({
       where: {
