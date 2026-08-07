@@ -8,12 +8,14 @@ import {
 } from '@nestjs/swagger';
 
 import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
+import { ApiErrors } from 'src/common/swagger/api-errors.decorator';
 
 import { DashboardService } from './dashboard.service';
 import { DashboardResponseDto } from './dto';
 
 @ApiTags('Dashboard')
 @ApiBearerAuth()
+@ApiErrors()
 @Controller('dashboard')
 @UseGuards(JwtAuthGuard)
 export class DashboardController {

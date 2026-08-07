@@ -20,6 +20,7 @@ import {
 } from '@nestjs/swagger';
 
 import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
+import { ApiErrors } from 'src/common/swagger/api-errors.decorator';
 
 import { InterviewsService } from './interviews.service';
 import {
@@ -30,6 +31,7 @@ import {
 
 @ApiTags('Interviews')
 @ApiBearerAuth()
+@ApiErrors()
 @Controller('interviews')
 @UseGuards(JwtAuthGuard)
 export class InterviewsController {

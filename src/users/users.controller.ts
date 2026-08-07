@@ -10,11 +10,13 @@ import {
 } from '@nestjs/common';
 
 import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { ApiErrors } from 'src/common/swagger/api-errors.decorator';
 
 import { UsersService } from './users.service';
 import { UsersCreateDto, UsersResponseDto, UsersUpdateDto } from './dto';
 
 @ApiTags('Users')
+@ApiErrors()
 @Controller('users')
 export class UsersController {
   constructor(private usersService: UsersService) {}

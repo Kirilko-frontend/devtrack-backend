@@ -1,12 +1,14 @@
 import { Body, Controller, Post } from '@nestjs/common';
 
 import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { ApiErrors } from 'src/common/swagger/api-errors.decorator';
 
 import { AuthService } from './auth.service';
 import { AuthLoginDto, AuthRegisterDto, AuthResponseDto } from './dto';
 import { UsersResponseDto } from 'src/users/dto';
 
 @ApiTags('Auth')
+@ApiErrors()
 @Controller('auth')
 export class AuthController {
   constructor(private authService: AuthService) {}

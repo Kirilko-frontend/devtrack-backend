@@ -26,17 +26,16 @@ import {
 } from '@nestjs/swagger';
 
 import type { Response } from 'express';
-
-import { FileInterceptor } from '@nestjs/platform-express';
+import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
+import { ApiErrors } from 'src/common/swagger/api-errors.decorator';
 
 import { ResumesService } from './resumes.service';
 
 import { ResumesCreateDto, ResumesUpdateDto, ResumesResponseDto } from './dto';
 
-import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
-
 @ApiTags('Resumes')
 @ApiBearerAuth()
+@ApiErrors()
 @Controller('resumes')
 @UseGuards(JwtAuthGuard)
 export class ResumesController {
