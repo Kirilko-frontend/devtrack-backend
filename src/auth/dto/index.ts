@@ -1,4 +1,5 @@
-import { RegisterDto } from './register.dto';
-import { LoginDto } from './login.dto';
+import { AuthRegisterDto } from './auth-register.dto';
+import { AuthLoginDto } from './auth-login.dto';
+import { AuthResponseDto } from './auth-response.dto';
 
-export { RegisterDto, LoginDto };
+export { AuthRegisterDto, AuthLoginDto, AuthResponseDto };
