@@ -11,7 +11,9 @@ export class VacanciesService {
   async findAll(userId: number) {
     return await this.prismaClient.vacancy.findMany({
       where: {
-        userId,
+        company: {
+          userId,
+        },
       },
       include: {
         company: true,
@@ -23,7 +25,9 @@ export class VacanciesService {
     const vacancy = await this.prismaClient.vacancy.findFirst({
       where: {
         id,
-        userId,
+        company: {
+          userId,
+        },
       },
       include: {
         company: true,
@@ -41,7 +45,9 @@ export class VacanciesService {
     const vacancy = await this.prismaClient.vacancy.findFirst({
       where: {
         id: vacancyId,
-        userId,
+        company: {
+          userId,
+        },
       },
     });
 
@@ -63,7 +69,9 @@ export class VacanciesService {
     const vacancy = await this.prismaClient.vacancy.findFirst({
       where: {
         id,
-        userId,
+        company: {
+          userId,
+        },
       },
     });
 
@@ -92,9 +100,10 @@ export class VacanciesService {
   }
 
   async create(data: VacancyCreateDto, userId: number) {
-    const company = await this.prismaClient.company.findUnique({
+    const company = await this.prismaClient.company.findFirst({
       where: {
         id: data.companyId,
+        userId,
       },
     });
 
@@ -109,11 +118,14 @@ export class VacanciesService {
       },
     });
   }
+
   async delete(id: number, userId: number) {
     const vacancy = await this.prismaClient.vacancy.findFirst({
       where: {
         id,
-        userId,
+        company: {
+          userId,
+        },
       },
     });
 
