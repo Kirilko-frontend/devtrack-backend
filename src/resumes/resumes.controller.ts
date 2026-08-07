@@ -31,7 +31,7 @@ import { FileInterceptor } from '@nestjs/platform-express';
 
 import { ResumesService } from './resumes.service';
 
-import { ResumeCreateDto, ResumeUpdateDto, ResumesResponseDto } from './dto';
+import { ResumesCreateDto, ResumesUpdateDto, ResumesResponseDto } from './dto';
 
 import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
 
@@ -88,7 +88,7 @@ export class ResumesController {
     description: 'Resume successfully created.',
     type: ResumesResponseDto,
   })
-  create(@Body() data: ResumeCreateDto, @Request() req) {
+  create(@Body() data: ResumesCreateDto, @Request() req) {
     return this.resumesService.create(data, req.user.id);
   }
 
@@ -112,7 +112,7 @@ export class ResumesController {
   })
   update(
     @Param('id', ParseIntPipe) id: number,
-    @Body() data: ResumeUpdateDto,
+    @Body() data: ResumesUpdateDto,
     @Request() req,
   ) {
     return this.resumesService.update(id, data, req.user.id);
@@ -173,7 +173,7 @@ export class ResumesController {
   })
   upload(
     @UploadedFile() file: Express.Multer.File,
-    @Body() data: ResumeCreateDto,
+    @Body() data: ResumesCreateDto,
     @Request() req,
   ) {
     if (!file) {

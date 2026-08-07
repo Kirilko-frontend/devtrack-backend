@@ -3,7 +3,7 @@ import { join } from 'path';
 import { Response } from 'express';
 
 import { PrismaService } from 'src/prisma/prisma.service';
-import { ResumeCreateDto, ResumeUpdateDto } from './dto';
+import { ResumesCreateDto, ResumesUpdateDto } from './dto';
 
 @Injectable()
 export class ResumesService {
@@ -30,7 +30,7 @@ export class ResumesService {
     return resume;
   }
 
-  create(data: ResumeCreateDto, userId: number) {
+  create(data: ResumesCreateDto, userId: number) {
     return this.prisma.resume.create({
       data: {
         ...data,
@@ -39,7 +39,7 @@ export class ResumesService {
     });
   }
 
-  async update(id: number, data: ResumeUpdateDto, userId: number) {
+  async update(id: number, data: ResumesUpdateDto, userId: number) {
     const resume = await this.prisma.resume.findFirst({
       where: { id, userId },
     });

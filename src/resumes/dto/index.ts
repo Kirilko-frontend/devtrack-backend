@@ -1,5 +1,5 @@
-import { ResumeCreateDto } from './resumes-create.dto';
-import { ResumeUpdateDto } from './resumes-update.dto';
+import { ResumesCreateDto } from './resumes-create.dto';
+import { ResumesUpdateDto } from './resumes-update.dto';
 import { ResumesResponseDto } from './resumes-response.dto';
 
-export { ResumeCreateDto, ResumeUpdateDto, ResumesResponseDto };
+export { ResumesCreateDto, ResumesUpdateDto, ResumesResponseDto };
