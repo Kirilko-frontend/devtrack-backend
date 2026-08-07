@@ -1,7 +1,7 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { InterviewType } from '@prisma/client';
 
-export class InterviewResponseDto {
+export class InterviewsResponseDto {
   @ApiProperty({
     example: 1,
     description: 'Interview id',

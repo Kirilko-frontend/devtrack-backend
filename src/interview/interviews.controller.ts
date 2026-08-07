@@ -25,7 +25,7 @@ import { InterviewsService } from './interviews.service';
 import {
   InterviewsCreateDto,
   InterviewsUpdateDto,
-  InterviewResponseDto,
+  InterviewsResponseDto,
 } from './dto';
 
 @ApiTags('Interviews')
@@ -43,7 +43,7 @@ export class InterviewsController {
   @ApiResponse({
     status: 200,
     description: 'Interviews successfully returned.',
-    type: [InterviewResponseDto],
+    type: [InterviewsResponseDto],
   })
   findAll(@Request() req) {
     return this.interviewsService.findAll(req.user.id);
@@ -61,7 +61,7 @@ export class InterviewsController {
   @ApiResponse({
     status: 200,
     description: 'Interview successfully found.',
-    type: InterviewResponseDto,
+    type: InterviewsResponseDto,
   })
   @ApiResponse({
     status: 404,
@@ -79,7 +79,7 @@ export class InterviewsController {
   @ApiResponse({
     status: 201,
     description: 'Interview successfully created.',
-    type: InterviewResponseDto,
+    type: InterviewsResponseDto,
   })
   @ApiResponse({
     status: 404,
@@ -101,7 +101,7 @@ export class InterviewsController {
   @ApiResponse({
     status: 200,
     description: 'Interview successfully updated.',
-    type: InterviewResponseDto,
+    type: InterviewsResponseDto,
   })
   @ApiResponse({
     status: 404,
