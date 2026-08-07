@@ -7,6 +7,7 @@ import {
   ParseIntPipe,
   Patch,
   Post,
+  Request,
   UseGuards,
 } from '@nestjs/common';
 
@@ -39,8 +40,8 @@ export class CompaniesController {
     description: 'Companies successfully returned',
     type: [CompanyResponseDto],
   })
-  findAll() {
-    return this.companiesService.findAll();
+  findAll(@Request() req) {
+    return this.companiesService.findAll(req.user.id);
   }
 
   @Get(':id')
@@ -60,8 +61,8 @@ export class CompaniesController {
     status: 404,
     description: 'Company not found',
   })
-  findOne(@Param('id', ParseIntPipe) id: number) {
-    return this.companiesService.findOne(id);
+  findOne(@Param('id', ParseIntPipe) id: number, @Request() req) {
+    return this.companiesService.findOne(id, req.user.id);
   }
 
   @Post()
@@ -73,8 +74,8 @@ export class CompaniesController {
     description: 'Company created',
     type: CompanyResponseDto,
   })
-  create(@Body() data: CompanyCreateDto) {
-    return this.companiesService.create(data);
+  create(@Body() data: CompanyCreateDto, @Request() req) {
+    return this.companiesService.create(data, req.user.id);
   }
 
   @Patch(':id')
@@ -93,8 +94,9 @@ export class CompaniesController {
   update(
     @Param('id', ParseIntPipe) id: number,
     @Body() data: CompanyUpdateDto,
+    @Request() req,
   ) {
-    return this.companiesService.update(id, data);
+    return this.companiesService.update(id, data, req.user.id);
   }
 
   @Delete(':id')
@@ -109,7 +111,7 @@ export class CompaniesController {
     status: 200,
     description: 'Company deleted',
   })
-  delete(@Param('id', ParseIntPipe) id: number) {
-    return this.companiesService.delete(id);
+  delete(@Param('id', ParseIntPipe) id: number, @Request() req) {
+    return this.companiesService.delete(id, req.user.id);
   }
 }

@@ -3,24 +3,37 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
+
 import { PrismaService } from 'src/prisma/prisma.service';
+
 import { CompanyCreateDto, CompanyUpdateDto } from './dto';
+
 import { companySelect, vacancySelect } from './prisma/selects';
 
 @Injectable()
 export class CompaniesService {
   constructor(private prisma: PrismaService) {}
 
-  findAll() {
+  findAll(userId: number) {
     return this.prisma.company.findMany({
+      where: {
+        userId,
+      },
       select: companySelect,
     });
   }
 
-  async findOne(id: number) {
-    const company = await this.prisma.company.findUnique({
-      where: { id },
-      include: { vacancies: { select: vacancySelect } },
+  async findOne(id: number, userId: number) {
+    const company = await this.prisma.company.findFirst({
+      where: {
+        id,
+        userId,
+      },
+      include: {
+        vacancies: {
+          select: vacancySelect,
+        },
+      },
     });
 
     if (!company) {
@@ -30,15 +43,21 @@ export class CompaniesService {
     return company;
   }
 
-  create(data: CompanyCreateDto) {
+  create(data: CompanyCreateDto, userId: number) {
     return this.prisma.company.create({
-      data,
+      data: {
+        ...data,
+        userId,
+      },
     });
   }
 
-  async update(id: number, data: CompanyUpdateDto) {
-    const company = await this.prisma.company.findUnique({
-      where: { id },
+  async update(id: number, data: CompanyUpdateDto, userId: number) {
+    const company = await this.prisma.company.findFirst({
+      where: {
+        id,
+        userId,
+      },
     });
 
     if (!company) {
@@ -46,15 +65,22 @@ export class CompaniesService {
     }
 
     return this.prisma.company.update({
-      where: { id },
+      where: {
+        id,
+      },
       data,
     });
   }
 
-  async delete(id: number) {
-    const company = await this.prisma.company.findUnique({
-      where: { id },
-      include: { vacancies: true },
+  async delete(id: number, userId: number) {
+    const company = await this.prisma.company.findFirst({
+      where: {
+        id,
+        userId,
+      },
+      include: {
+        vacancies: true,
+      },
     });
 
     if (!company) {
@@ -66,7 +92,9 @@ export class CompaniesService {
     }
 
     return this.prisma.company.delete({
-      where: { id },
+      where: {
+        id,
+      },
     });
   }
 }

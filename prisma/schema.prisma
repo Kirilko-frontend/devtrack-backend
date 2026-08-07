@@ -29,6 +29,7 @@ model User{
   email String @unique
   password String
 
+  companies Company[]
   vacancies Vacancy[]
   resumes Resume[]
 
@@ -41,14 +42,17 @@ model User{
 model Company {
   id Int @id @default(autoincrement())
 
-  name String @unique
+  name String
   website String?
 
-   vacancies Vacancy[]
+  userId Int
+  user User @relation(fields:[userId], references:[id])
 
-  createdAt DateTime @default(now()) 
+  vacancies Vacancy[]
 
-  @@map("companies")  
+  createdAt DateTime @default(now())
+
+  @@map("companies")
 }
 
 model Vacancy {
