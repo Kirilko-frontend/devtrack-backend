@@ -1,7 +1,7 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { IsOptional, IsString, IsUrl } from 'class-validator';
 
-export class CompanyCreateDto {
+export class CompaniesCreateDto {
   @ApiProperty({
     example: 'Google',
     description: 'Company name',

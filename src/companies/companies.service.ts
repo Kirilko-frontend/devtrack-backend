@@ -6,7 +6,7 @@ import {
 
 import { PrismaService } from 'src/prisma/prisma.service';
 
-import { CompanyCreateDto, CompanyUpdateDto } from './dto';
+import { CompaniesCreateDto, CompaniesUpdateDto } from './dto';
 
 import { companySelect, vacancySelect } from './prisma/selects';
 
@@ -43,7 +43,7 @@ export class CompaniesService {
     return company;
   }
 
-  create(data: CompanyCreateDto, userId: number) {
+  create(data: CompaniesCreateDto, userId: number) {
     return this.prisma.company.create({
       data: {
         ...data,
@@ -52,7 +52,7 @@ export class CompaniesService {
     });
   }
 
-  async update(id: number, data: CompanyUpdateDto, userId: number) {
+  async update(id: number, data: CompaniesUpdateDto, userId: number) {
     const company = await this.prisma.company.findFirst({
       where: {
         id,

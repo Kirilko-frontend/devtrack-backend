@@ -22,7 +22,11 @@ import {
 import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
 
 import { CompaniesService } from './companies.service';
-import { CompanyCreateDto, CompanyResponseDto, CompanyUpdateDto } from './dto';
+import {
+  CompaniesCreateDto,
+  CompaniesResponseDto,
+  CompaniesUpdateDto,
+} from './dto';
 
 @ApiTags('Companies')
 @ApiBearerAuth()
@@ -38,7 +42,7 @@ export class CompaniesController {
   @ApiResponse({
     status: 200,
     description: 'Companies successfully returned',
-    type: [CompanyResponseDto],
+    type: [CompaniesResponseDto],
   })
   findAll(@Request() req) {
     return this.companiesService.findAll(req.user.id);
@@ -55,7 +59,7 @@ export class CompaniesController {
   @ApiResponse({
     status: 200,
     description: 'Company found',
-    type: CompanyResponseDto,
+    type: CompaniesResponseDto,
   })
   @ApiResponse({
     status: 404,
@@ -72,9 +76,9 @@ export class CompaniesController {
   @ApiResponse({
     status: 201,
     description: 'Company created',
-    type: CompanyResponseDto,
+    type: CompaniesResponseDto,
   })
-  create(@Body() data: CompanyCreateDto, @Request() req) {
+  create(@Body() data: CompaniesCreateDto, @Request() req) {
     return this.companiesService.create(data, req.user.id);
   }
 
@@ -89,11 +93,11 @@ export class CompaniesController {
   @ApiResponse({
     status: 200,
     description: 'Company updated',
-    type: CompanyResponseDto,
+    type: CompaniesResponseDto,
   })
   update(
     @Param('id', ParseIntPipe) id: number,
-    @Body() data: CompanyUpdateDto,
+    @Body() data: CompaniesUpdateDto,
     @Request() req,
   ) {
     return this.companiesService.update(id, data, req.user.id);

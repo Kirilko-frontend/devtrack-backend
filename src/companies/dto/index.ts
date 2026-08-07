@@ -1,5 +1,5 @@
-import { CompanyCreateDto } from './company-create.dto';
-import { CompanyUpdateDto } from './company-update.dto';
-import { CompanyResponseDto } from './company-response.dto';
+import { CompaniesCreateDto } from './companies-create.dto';
+import { CompaniesUpdateDto } from './companies-update.dto';
+import { CompaniesResponseDto } from './companies-response.dto';
 
-export { CompanyCreateDto, CompanyUpdateDto, CompanyResponseDto };
+export { CompaniesCreateDto, CompaniesUpdateDto, CompaniesResponseDto };
