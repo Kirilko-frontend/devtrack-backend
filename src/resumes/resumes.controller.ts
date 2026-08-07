@@ -15,34 +15,101 @@ import {
   Res,
 } from '@nestjs/common';
 
+import {
+  ApiBearerAuth,
+  ApiBody,
+  ApiConsumes,
+  ApiOperation,
+  ApiParam,
+  ApiResponse,
+  ApiTags,
+} from '@nestjs/swagger';
+
 import type { Response } from 'express';
+
 import { FileInterceptor } from '@nestjs/platform-express';
 
 import { ResumesService } from './resumes.service';
-import { ResumeCreateDto, ResumeUpdateDto } from './dto';
+
+import { ResumeCreateDto, ResumeUpdateDto, ResumesResponseDto } from './dto';
+
 import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
 
+@ApiTags('Resumes')
+@ApiBearerAuth()
 @Controller('resumes')
 @UseGuards(JwtAuthGuard)
 export class ResumesController {
   constructor(private resumesService: ResumesService) {}
 
   @Get()
+  @ApiOperation({
+    summary: 'Get all resumes',
+    description: 'Returns resumes belonging to current user.',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Resumes successfully returned.',
+    type: [ResumesResponseDto],
+  })
   findAll(@Request() req) {
     return this.resumesService.findAll(req.user.id);
   }
 
   @Get(':id')
+  @ApiOperation({
+    summary: 'Get resume by id',
+    description: 'Returns one resume.',
+  })
+  @ApiParam({
+    name: 'id',
+    example: 1,
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Resume successfully found.',
+    type: ResumesResponseDto,
+  })
+  @ApiResponse({
+    status: 404,
+    description: 'Resume not found.',
+  })
   findOne(@Param('id', ParseIntPipe) id: number, @Request() req) {
     return this.resumesService.findOne(id, req.user.id);
   }
 
   @Post()
+  @ApiOperation({
+    summary: 'Create resume',
+    description: 'Creates a new resume.',
+  })
+  @ApiResponse({
+    status: 201,
+    description: 'Resume successfully created.',
+    type: ResumesResponseDto,
+  })
   create(@Body() data: ResumeCreateDto, @Request() req) {
     return this.resumesService.create(data, req.user.id);
   }
 
   @Patch(':id')
+  @ApiOperation({
+    summary: 'Update resume',
+    description: 'Updates resume data.',
+  })
+  @ApiParam({
+    name: 'id',
+    example: 1,
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Resume successfully updated.',
+    type: ResumesResponseDto,
+  })
+  @ApiResponse({
+    status: 404,
+    description: 'Resume not found.',
+  })
   update(
     @Param('id', ParseIntPipe) id: number,
     @Body() data: ResumeUpdateDto,
@@ -52,12 +119,58 @@ export class ResumesController {
   }
 
   @Delete(':id')
+  @ApiOperation({
+    summary: 'Delete resume',
+    description: 'Deletes resume.',
+  })
+  @ApiParam({
+    name: 'id',
+    example: 1,
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Resume successfully deleted.',
+  })
+  @ApiResponse({
+    status: 404,
+    description: 'Resume not found.',
+  })
   delete(@Param('id', ParseIntPipe) id: number, @Request() req) {
     return this.resumesService.delete(id, req.user.id);
   }
 
   @Post('upload')
-  @UseInterceptors(FileInterceptor('file'))
+  @ApiOperation({
+    summary: 'Upload resume file',
+    description: 'Uploads resume file and creates resume record.',
+  })
+  @ApiConsumes('multipart/form-data')
+  @ApiBody({
+    schema: {
+      type: 'object',
+      properties: {
+        file: {
+          type: 'string',
+          format: 'binary',
+        },
+
+        name: {
+          type: 'string',
+          example: 'Frontend Developer CV',
+        },
+
+        vacancyId: {
+          type: 'number',
+          example: 1,
+        },
+      },
+    },
+  })
+  @ApiResponse({
+    status: 201,
+    description: 'Resume uploaded successfully.',
+    type: ResumesResponseDto,
+  })
   upload(
     @UploadedFile() file: Express.Multer.File,
     @Body() data: ResumeCreateDto,
@@ -77,6 +190,22 @@ export class ResumesController {
   }
 
   @Get(':id/file')
+  @ApiOperation({
+    summary: 'Download resume file',
+    description: 'Returns resume file.',
+  })
+  @ApiParam({
+    name: 'id',
+    example: 1,
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'File successfully returned.',
+  })
+  @ApiResponse({
+    status: 404,
+    description: 'Resume not found.',
+  })
   getFile(
     @Param('id', ParseIntPipe) id: number,
     @Request() req,
