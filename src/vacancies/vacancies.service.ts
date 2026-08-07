@@ -2,7 +2,7 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 
 import { PrismaService } from 'src/prisma/prisma.service';
 
-import { VacancyCreateDto, VacancyUpdateDto } from './dto';
+import { VacanciesCreateDto, VacanciesUpdateDto } from './dto';
 
 @Injectable()
 export class VacanciesService {
@@ -65,7 +65,7 @@ export class VacanciesService {
     });
   }
 
-  async update(id: number, data: VacancyUpdateDto, userId: number) {
+  async update(id: number, data: VacanciesUpdateDto, userId: number) {
     const vacancy = await this.prismaClient.vacancy.findFirst({
       where: {
         id,
@@ -99,7 +99,7 @@ export class VacanciesService {
     });
   }
 
-  async create(data: VacancyCreateDto, userId: number) {
+  async create(data: VacanciesCreateDto, userId: number) {
     const company = await this.prismaClient.company.findFirst({
       where: {
         id: data.companyId,

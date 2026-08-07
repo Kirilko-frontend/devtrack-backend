@@ -1,5 +1,5 @@
-import { VacancyCreateDto } from './vacancy-create-dto';
-import { VacancyUpdateDto } from './vacancy-update.dto';
-import { VacancyResponseDto } from './vacancy-response.dto';
+import { VacanciesCreateDto } from './vacancies-create-dto';
+import { VacanciesUpdateDto } from './vacancies-update.dto';
+import { VacanciesResponseDto } from './vacancies-response.dto';
 
-export { VacancyCreateDto, VacancyUpdateDto, VacancyResponseDto };
+export { VacanciesCreateDto, VacanciesUpdateDto, VacanciesResponseDto };

@@ -9,7 +9,7 @@ export enum VacancyStatus {
   REJECTED = 'REJECTED',
 }
 
-export class VacancyUpdateDto {
+export class VacanciesUpdateDto {
   @ApiPropertyOptional({
     example: 'Senior Frontend Developer',
     description: 'Vacancy title',

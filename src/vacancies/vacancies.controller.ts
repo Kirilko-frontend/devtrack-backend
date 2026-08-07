@@ -22,7 +22,11 @@ import {
 import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
 
 import { VacanciesService } from './vacancies.service';
-import { VacancyCreateDto, VacancyResponseDto, VacancyUpdateDto } from './dto';
+import {
+  VacanciesCreateDto,
+  VacanciesResponseDto,
+  VacanciesUpdateDto,
+} from './dto';
 
 @ApiTags('Vacancies')
 @ApiBearerAuth()
@@ -39,7 +43,7 @@ export class VacanciesController {
   @ApiResponse({
     status: 200,
     description: 'Vacancies successfully returned.',
-    type: [VacancyResponseDto],
+    type: [VacanciesResponseDto],
   })
   findAll(@Request() req) {
     return this.vacanciesService.findAll(req.user.id);
@@ -80,7 +84,7 @@ export class VacanciesController {
   @ApiResponse({
     status: 200,
     description: 'Vacancy successfully found.',
-    type: VacancyResponseDto,
+    type: VacanciesResponseDto,
   })
   @ApiResponse({
     status: 404,
@@ -98,13 +102,13 @@ export class VacanciesController {
   @ApiResponse({
     status: 201,
     description: 'Vacancy successfully created.',
-    type: VacancyResponseDto,
+    type: VacanciesResponseDto,
   })
   @ApiResponse({
     status: 404,
     description: 'Company not found.',
   })
-  create(@Body() data: VacancyCreateDto, @Request() req) {
+  create(@Body() data: VacanciesCreateDto, @Request() req) {
     return this.vacanciesService.create(data, req.user.id);
   }
 
@@ -121,7 +125,7 @@ export class VacanciesController {
   @ApiResponse({
     status: 200,
     description: 'Vacancy successfully updated.',
-    type: VacancyResponseDto,
+    type: VacanciesResponseDto,
   })
   @ApiResponse({
     status: 404,
@@ -129,7 +133,7 @@ export class VacanciesController {
   })
   update(
     @Param('id', ParseIntPipe) id: number,
-    @Body() data: VacancyUpdateDto,
+    @Body() data: VacanciesUpdateDto,
     @Request() req,
   ) {
     return this.vacanciesService.update(id, data, req.user.id);

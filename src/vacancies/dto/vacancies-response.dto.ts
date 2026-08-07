@@ -1,7 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { VacancyStatus } from '@prisma/client';
 
-export class VacancyResponseDto {
+export class VacanciesResponseDto {
   @ApiProperty({
     example: 1,
   })
