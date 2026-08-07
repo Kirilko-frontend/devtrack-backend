@@ -2,26 +2,26 @@ import { ApiProperty } from '@nestjs/swagger';
 
 export class DashboardResponseDto {
   @ApiProperty({
-    example: 5,
-    description: 'Total companies count',
+    example: 10,
+    description: 'Total vacancies created by user',
   })
-  companies: number;
+  totalVacancies: number;
 
   @ApiProperty({
-    example: 10,
-    description: 'Total vacancies count',
+    example: 5,
+    description: 'Total companies owned by user vacancies',
   })
-  vacancies: number;
+  totalCompanies: number;
 
   @ApiProperty({
     example: 3,
-    description: 'Total interviews count',
+    description: 'Total interviews connected to user vacancies',
   })
-  interviews: number;
+  totalInterviews: number;
 
   @ApiProperty({
-    example: 4,
-    description: 'Total resumes count',
+    example: 7,
+    description: 'Total resumes created by user',
   })
-  resumes: number;
+  totalResumes: number;
 }
