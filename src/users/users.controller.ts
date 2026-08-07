@@ -12,7 +12,7 @@ import {
 import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 
 import { UsersService } from './users.service';
-import { UserCreateDto, UserResponseDto, UserUpdateDto } from './dto';
+import { UsersCreateDto, UsersResponseDto, UsersUpdateDto } from './dto';
 
 @ApiTags('Users')
 @Controller('users')
@@ -27,7 +27,7 @@ export class UsersController {
   @ApiResponse({
     status: 200,
     description: 'Users successfully returned.',
-    type: [UserResponseDto],
+    type: [UsersResponseDto],
   })
   @ApiResponse({
     status: 404,
@@ -45,13 +45,13 @@ export class UsersController {
   @ApiResponse({
     status: 201,
     description: 'User successfully created.',
-    type: UserCreateDto,
+    type: UsersCreateDto,
   })
   @ApiResponse({
     status: 409,
     description: 'Email already exists.',
   })
-  create(@Body() data: UserCreateDto) {
+  create(@Body() data: UsersCreateDto) {
     return this.usersService.create(data);
   }
 
@@ -63,7 +63,7 @@ export class UsersController {
   @ApiResponse({
     status: 200,
     description: 'User successfully found.',
-    type: UserResponseDto,
+    type: UsersResponseDto,
   })
   @ApiResponse({
     status: 404,
@@ -81,13 +81,13 @@ export class UsersController {
   @ApiResponse({
     status: 200,
     description: 'User successfully updated.',
-    type: UserResponseDto,
+    type: UsersResponseDto,
   })
   @ApiResponse({
     status: 404,
     description: 'User not found.',
   })
-  update(@Param('id', ParseIntPipe) id: number, @Body() data: UserUpdateDto) {
+  update(@Param('id', ParseIntPipe) id: number, @Body() data: UsersUpdateDto) {
     return this.usersService.update(id, data);
   }
 

@@ -7,16 +7,16 @@ import { PrismaService } from 'src/prisma/prisma.service';
 
 import bcrypt from 'bcrypt';
 
-import { UserCreateDto, UserResponseDto, UserUpdateDto } from './dto';
-import { UserSelect } from './prisma/selects/user-select';
+import { UsersCreateDto, UsersResponseDto, UsersUpdateDto } from './dto';
+import { UsersSelect } from './prisma/selects/users-select';
 
 @Injectable()
 export class UsersService {
   constructor(private prisma: PrismaService) {}
 
-  async findAll(): Promise<UserResponseDto[]> {
+  async findAll(): Promise<UsersResponseDto[]> {
     const users = await this.prisma.user.findMany({
-      select: UserSelect,
+      select: UsersSelect,
     });
 
     if (users.length === 0) {
@@ -26,7 +26,7 @@ export class UsersService {
     return users;
   }
 
-  async create(data: UserCreateDto) {
+  async create(data: UsersCreateDto) {
     const existingUser = await this.prisma.user.findUnique({
       where: {
         email: data.email,
@@ -47,12 +47,12 @@ export class UsersService {
     });
   }
 
-  async findOne(id: number): Promise<UserResponseDto> {
+  async findOne(id: number): Promise<UsersResponseDto> {
     const user = await this.prisma.user.findUnique({
       where: {
         id,
       },
-      select: UserSelect,
+      select: UsersSelect,
     });
 
     if (!user) {
@@ -62,7 +62,7 @@ export class UsersService {
     return user;
   }
 
-  async update(id: number, data: UserUpdateDto) {
+  async update(id: number, data: UsersUpdateDto) {
     const updateData = {
       ...data,
     };

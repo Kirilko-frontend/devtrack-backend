@@ -1,5 +1,5 @@
-import { UserCreateDto } from './user-create.dto';
-import { UserUpdateDto } from './user-update.dto';
-import { UserResponseDto } from './user-response.dto';
+import { UsersCreateDto } from './users-create.dto';
+import { UsersUpdateDto } from './users-update.dto';
+import { UsersResponseDto } from './users-response.dto';
 
-export { UserCreateDto, UserUpdateDto, UserResponseDto };
+export { UsersCreateDto, UsersUpdateDto, UsersResponseDto };

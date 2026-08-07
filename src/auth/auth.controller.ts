@@ -4,7 +4,7 @@ import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 
 import { AuthService } from './auth.service';
 import { AuthLoginDto, AuthRegisterDto, AuthResponseDto } from './dto';
-import { UserResponseDto } from 'src/users/dto';
+import { UsersResponseDto } from 'src/users/dto';
 
 @ApiTags('Auth')
 @Controller('auth')
@@ -18,7 +18,7 @@ export class AuthController {
   @ApiResponse({
     status: 201,
     description: 'User successfully registered',
-    type: UserResponseDto,
+    type: UsersResponseDto,
   })
   @ApiResponse({
     status: 409,
