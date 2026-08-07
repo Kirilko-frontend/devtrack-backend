@@ -1,42 +1,40 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { InterviewType } from '@prisma/client';
 
-import {
-  IsDateString,
-  IsEnum,
-  IsInt,
-  IsOptional,
-  IsString,
-} from 'class-validator';
+export class InterviewResponseDto {
+  @ApiProperty({
+    example: 1,
+    description: 'Interview id',
+  })
+  id: number;
 
-export class InterviewsCreateDto {
   @ApiProperty({
     example: '2026-08-12T10:00:00.000Z',
     description: 'Interview date',
   })
-  @IsDateString()
-  date: string;
+  date: Date;
 
   @ApiPropertyOptional({
-    example: 'Discussed React, Vue, SCSS experience',
+    example: 'Discussed React experience',
     description: 'Interview notes',
   })
-  @IsOptional()
-  @IsString()
   notes?: string;
 
   @ApiProperty({
-    example: 'PHONE',
     enum: InterviewType,
+    example: InterviewType.PHONE,
     description: 'Interview type',
   })
-  @IsEnum(InterviewType)
   types: InterviewType;
 
   @ApiProperty({
-    example: 1,
-    description: 'Vacancy id',
+    example: 6,
+    description: 'Related vacancy id',
   })
-  @IsInt()
   vacancyId: number;
+
+  @ApiProperty({
+    example: '2026-08-07T10:00:00.000Z',
+  })
+  createdAt: Date;
 }
