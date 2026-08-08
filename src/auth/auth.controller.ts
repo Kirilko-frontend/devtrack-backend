@@ -1,11 +1,12 @@
-import { Body, Controller, Post } from '@nestjs/common';
+import { Body, Controller, Post, Res } from '@nestjs/common';
 
+import type { Response } from 'express';
 import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { ApiErrors } from 'src/common/swagger/api-errors.decorator';
 
 import { AuthService } from './auth.service';
-import { AuthLoginDto, AuthRegisterDto, AuthResponseDto } from './dto';
 import { UsersResponseDto } from 'src/users/dto';
+import { AuthLoginDto, AuthRegisterDto, AuthResponseDto } from './dto';
 
 @ApiTags('Auth')
 @ApiErrors()
@@ -43,7 +44,21 @@ export class AuthController {
     status: 401,
     description: 'Invalid credentials',
   })
-  login(@Body() data: AuthLoginDto) {
-    return this.authService.login(data);
+  async login(
+    @Body() data: AuthLoginDto,
+    @Res({ passthrough: true }) res: Response,
+  ) {
+    const result = await this.authService.login(data);
+
+    res.cookie('access_token', result.access_token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax',
+      maxAge: 24 * 60 * 60 * 1000,
+    });
+
+    return {
+      message: 'Login successful',
+    };
   }
 }

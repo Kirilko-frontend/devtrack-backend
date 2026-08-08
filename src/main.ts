@@ -1,12 +1,20 @@
 import { BadRequestException, ValidationPipe } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
+import cookieParser from 'cookie-parser';
 import { AppModule } from './app.module';
 import { HttpExceptionFilter } from './common/filters/http-exception.filter';
 import 'dotenv/config';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
+
+  app.use(cookieParser());
+
+  app.enableCors({
+    origin: process.env.FRONTEND_URL ?? 'http://localhost:5173',
+    credentials: true,
+  });
 
   const config = new DocumentBuilder()
     .setTitle('DevTrack API')
@@ -22,7 +30,6 @@ async function bootstrap() {
   app.useGlobalPipes(
     new ValidationPipe({
       whitelist: true,
-
       transform: true,
 
       exceptionFactory(errors) {
@@ -31,7 +38,6 @@ async function bootstrap() {
             field: err.property,
             errors: Object.values(err.constraints ?? {}),
           })),
-
           error: 'VALIDATION_ERROR',
         });
       },
@@ -41,7 +47,6 @@ async function bootstrap() {
   app.useGlobalFilters(new HttpExceptionFilter());
 
   await app.listen(process.env.PORT ?? 3000);
-
-  app.enableCors();
 }
+
 bootstrap();
