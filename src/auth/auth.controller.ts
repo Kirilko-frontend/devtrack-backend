@@ -1,9 +1,18 @@
-import { Body, Controller, Post, Res } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  Post,
+  Request,
+  Res,
+  UseGuards,
+} from '@nestjs/common';
 
 import type { Response } from 'express';
 import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { ApiErrors } from 'src/common/swagger/api-errors.decorator';
 
+import { JwtAuthGuard } from './jwt-auth.guard';
 import { AuthService } from './auth.service';
 import { UsersResponseDto } from 'src/users/dto';
 import { AuthLoginDto, AuthRegisterDto, AuthResponseDto } from './dto';
@@ -59,6 +68,43 @@ export class AuthController {
 
     return {
       message: 'Login successful',
+    };
+  }
+
+  @Get('me')
+  @UseGuards(JwtAuthGuard)
+  @ApiOperation({
+    summary: 'Get current user',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Current user successfully returned',
+  })
+  @ApiResponse({
+    status: 401,
+    description: 'Unauthorized',
+  })
+  me(@Request() req) {
+    return req.user;
+  }
+
+  @Post('logout')
+  @ApiOperation({
+    summary: 'Logout user',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'User successfully logged out',
+  })
+  logout(@Res({ passthrough: true }) res: Response) {
+    res.clearCookie('access_token', {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax',
+    });
+
+    return {
+      message: 'Logout successful',
     };
   }
 }
