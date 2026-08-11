@@ -16,6 +16,7 @@ export class DashboardService {
       interviewingVacancies,
       offeredVacancies,
       rejectedVacancies,
+      upcomingInterviews,
     ] = await Promise.all([
       this.prisma.vacancy.count({
         where: { userId },
@@ -71,6 +72,28 @@ export class DashboardService {
           status: 'REJECTED',
         },
       }),
+
+      this.prisma.interview.findMany({
+        where: {
+          date: {
+            gte: new Date(),
+          },
+          vacancy: {
+            userId,
+          },
+        },
+        orderBy: {
+          date: 'asc',
+        },
+        take: 5,
+        include: {
+          vacancy: {
+            include: {
+              company: true,
+            },
+          },
+        },
+      }),
     ]);
 
     return {
@@ -88,6 +111,8 @@ export class DashboardService {
         offered: offeredVacancies,
         rejected: rejectedVacancies,
       },
+
+      upcomingInterviews,
     };
   }
 }
