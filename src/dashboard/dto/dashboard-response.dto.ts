@@ -96,6 +96,20 @@ class DashboardInterviewDto {
   vacancy: DashboardInterviewVacancyDto;
 }
 
+class DashboardApplicationActivityDto {
+  @ApiProperty({
+    example: '2026-08-10',
+    description: 'Date of application activity',
+  })
+  date: string;
+
+  @ApiProperty({
+    example: 3,
+    description: 'Number of applications sent on this date',
+  })
+  count: number;
+}
+
 export class DashboardResponseDto {
   @ApiProperty({
     type: DashboardStatsDto,
@@ -112,4 +126,10 @@ export class DashboardResponseDto {
     description: 'Five nearest upcoming interviews',
   })
   upcomingInterviews: DashboardInterviewDto[];
+
+  @ApiProperty({
+    type: [DashboardApplicationActivityDto],
+    description: 'Number of applications sent per day',
+  })
+  applicationActivity: DashboardApplicationActivityDto[];
 }

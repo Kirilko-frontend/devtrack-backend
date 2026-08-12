@@ -18,13 +18,18 @@ export class DashboardService {
       offeredVacancies,
       rejectedVacancies,
       upcomingInterviews,
+      applicationHistory,
     ] = await Promise.all([
       this.prisma.vacancy.count({
-        where: { userId },
+        where: {
+          userId,
+        },
       }),
 
       this.prisma.company.count({
-        where: { userId },
+        where: {
+          userId,
+        },
       }),
 
       this.prisma.interview.count({
@@ -36,7 +41,9 @@ export class DashboardService {
       }),
 
       this.prisma.resume.count({
-        where: { userId },
+        where: {
+          userId,
+        },
       }),
 
       this.prisma.vacancy.count({
@@ -95,7 +102,21 @@ export class DashboardService {
           },
         },
       }),
+
+      this.prisma.vacancyHistory.findMany({
+        where: {
+          newStatus: 'APPLIED',
+          vacancy: {
+            userId,
+          },
+        },
+        orderBy: {
+          changedAt: 'asc',
+        },
+      }),
     ]);
+
+    const applicationActivity = this.groupApplicationsByDay(applicationHistory);
 
     return {
       stats: {
@@ -114,6 +135,23 @@ export class DashboardService {
       },
 
       upcomingInterviews,
+
+      applicationActivity,
     };
+  }
+
+  private groupApplicationsByDay(history: { changedAt: Date }[]) {
+    const grouped = new Map<string, number>();
+
+    for (const item of history) {
+      const date = item.changedAt.toISOString().split('T')[0];
+
+      grouped.set(date, (grouped.get(date) ?? 0) + 1);
+    }
+
+    return Array.from(grouped.entries()).map(([date, count]) => ({
+      date,
+      count,
+    }));
   }
 }
