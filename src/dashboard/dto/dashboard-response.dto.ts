@@ -27,6 +27,32 @@ class DashboardStatsDto {
   totalResumes: number;
 }
 
+class DashboardStatsChangesDto {
+  @ApiProperty({
+    example: 20,
+    description: 'Vacancies change compared to the previous 7-day period',
+  })
+  vacancies: number;
+
+  @ApiProperty({
+    example: -10,
+    description: 'Companies change compared to the previous 7-day period',
+  })
+  companies: number;
+
+  @ApiProperty({
+    example: 33,
+    description: 'Interviews change compared to the previous 7-day period',
+  })
+  interviews: number;
+
+  @ApiProperty({
+    example: 0,
+    description: 'Resumes change compared to the previous 7-day period',
+  })
+  resumes: number;
+}
+
 class DashboardVacancyStatusesDto {
   @ApiProperty({ example: 8 })
   saved: number;
@@ -115,6 +141,11 @@ export class DashboardResponseDto {
     type: DashboardStatsDto,
   })
   stats: DashboardStatsDto;
+
+  @ApiProperty({
+    type: DashboardStatsChangesDto,
+  })
+  statsChanges: DashboardStatsChangesDto;
 
   @ApiProperty({
     type: DashboardVacancyStatusesDto,

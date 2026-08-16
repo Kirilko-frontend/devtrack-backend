@@ -19,6 +19,7 @@ export class DashboardService {
       rejectedVacancies,
       upcomingInterviews,
       applicationHistory,
+      statsChanges,
     ] = await Promise.all([
       this.prisma.vacancy.count({
         where: {
@@ -114,6 +115,8 @@ export class DashboardService {
           changedAt: 'asc',
         },
       }),
+
+      this.getStatsChanges(userId),
     ]);
 
     const applicationActivity = this.groupApplicationsByDay(applicationHistory);
@@ -125,6 +128,8 @@ export class DashboardService {
         totalInterviews,
         totalResumes,
       },
+
+      statsChanges,
 
       vacancyStatuses: {
         saved: savedVacancies,
@@ -138,6 +143,89 @@ export class DashboardService {
 
       applicationActivity,
     };
+  }
+
+  private async getStatsChanges(userId: number) {
+    const now = new Date();
+
+    const currentPeriodStart = new Date(now);
+    currentPeriodStart.setDate(now.getDate() - 7);
+
+    const previousPeriodStart = new Date(now);
+    previousPeriodStart.setDate(now.getDate() - 14);
+
+    const [current, previous] = await Promise.all([
+      this.getPeriodStats(userId, currentPeriodStart, now),
+      this.getPeriodStats(userId, previousPeriodStart, currentPeriodStart),
+    ]);
+
+    return {
+      vacancies: this.calculateChange(current.vacancies, previous.vacancies),
+      companies: this.calculateChange(current.companies, previous.companies),
+      interviews: this.calculateChange(current.interviews, previous.interviews),
+      resumes: this.calculateChange(current.resumes, previous.resumes),
+    };
+  }
+
+  private async getPeriodStats(userId: number, startDate: Date, endDate: Date) {
+    const [vacancies, companies, interviews, resumes] = await Promise.all([
+      this.prisma.vacancy.count({
+        where: {
+          userId,
+          createdAt: {
+            gte: startDate,
+            lt: endDate,
+          },
+        },
+      }),
+
+      this.prisma.company.count({
+        where: {
+          userId,
+          createdAt: {
+            gte: startDate,
+            lt: endDate,
+          },
+        },
+      }),
+
+      this.prisma.interview.count({
+        where: {
+          date: {
+            gte: startDate,
+            lt: endDate,
+          },
+          vacancy: {
+            userId,
+          },
+        },
+      }),
+
+      this.prisma.resume.count({
+        where: {
+          userId,
+          createdAt: {
+            gte: startDate,
+            lt: endDate,
+          },
+        },
+      }),
+    ]);
+
+    return {
+      vacancies,
+      companies,
+      interviews,
+      resumes,
+    };
+  }
+
+  private calculateChange(current: number, previous: number) {
+    if (previous === 0) {
+      return current === 0 ? 0 : 100;
+    }
+
+    return Math.round(((current - previous) / previous) * 100);
   }
 
   private groupApplicationsByDay(history: { changedAt: Date }[]) {
