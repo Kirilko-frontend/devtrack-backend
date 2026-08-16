@@ -58,12 +58,15 @@ model Company {
 model Vacancy {
   id Int @id @default(autoincrement())
 
-  title String
+  title       String
   description String?
-  url String?
-  salary String?
-  status VacancyStatus @default(SAVED)
-  appliedAt DateTime?
+  url         String?
+  salary      String?
+  status      VacancyStatus @default(SAVED)
+  appliedAt   DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now()) @updatedAt
 
   resumes Resume[]
   interviews Interview[]
