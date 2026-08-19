@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { InterviewType } from '@prisma/client';
+import { InterviewType, VacancyStatus } from '@prisma/client';
 
 class DashboardStatsDto {
   @ApiProperty({
@@ -136,6 +136,65 @@ class DashboardApplicationActivityDto {
   count: number;
 }
 
+class DashboardVacancyCompanyDto {
+  @ApiProperty({
+    example: 1,
+    description: 'Company id',
+  })
+  id: number;
+
+  @ApiProperty({
+    example: 'Google',
+    description: 'Company name',
+  })
+  name: string;
+}
+
+class DashboardVacancyDto {
+  @ApiProperty({
+    example: 1,
+    description: 'Vacancy id',
+  })
+  id: number;
+
+  @ApiProperty({
+    example: 'Frontend Developer',
+    description: 'Vacancy title',
+  })
+  title: string;
+
+  @ApiProperty({
+    example: 'https://linkedin.com/jobs/123',
+    nullable: true,
+    description: 'Original vacancy URL',
+  })
+  url?: string;
+
+  @ApiProperty({
+    example: '3000-5000 USD',
+    nullable: true,
+    description: 'Vacancy salary',
+  })
+  salary?: string;
+
+  @ApiProperty({
+    enum: VacancyStatus,
+    example: VacancyStatus.APPLIED,
+  })
+  status: VacancyStatus;
+
+  @ApiProperty({
+    example: '2026-08-15T14:00:00.000Z',
+    description: 'Vacancy creation date',
+  })
+  createdAt: Date;
+
+  @ApiProperty({
+    type: DashboardVacancyCompanyDto,
+  })
+  company: DashboardVacancyCompanyDto;
+}
+
 export class DashboardResponseDto {
   @ApiProperty({
     type: DashboardStatsDto,
@@ -163,4 +222,10 @@ export class DashboardResponseDto {
     description: 'Number of applications sent per day',
   })
   applicationActivity: DashboardApplicationActivityDto[];
+
+  @ApiProperty({
+    type: [DashboardVacancyDto],
+    description: 'Ten most recently created vacancies',
+  })
+  recentVacancies: DashboardVacancyDto[];
 }

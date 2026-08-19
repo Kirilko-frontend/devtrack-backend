@@ -20,6 +20,7 @@ export class DashboardService {
       upcomingInterviews,
       applicationHistory,
       statsChanges,
+      recentVacancies,
     ] = await Promise.all([
       this.prisma.vacancy.count({
         where: {
@@ -117,6 +118,30 @@ export class DashboardService {
       }),
 
       this.getStatsChanges(userId),
+
+      this.prisma.vacancy.findMany({
+        where: {
+          userId,
+        },
+        orderBy: {
+          createdAt: 'desc',
+        },
+        take: 10,
+        select: {
+          id: true,
+          title: true,
+          url: true,
+          salary: true,
+          status: true,
+          createdAt: true,
+          company: {
+            select: {
+              id: true,
+              name: true,
+            },
+          },
+        },
+      }),
     ]);
 
     const applicationActivity = this.groupApplicationsByDay(applicationHistory);
@@ -142,6 +167,8 @@ export class DashboardService {
       upcomingInterviews,
 
       applicationActivity,
+
+      recentVacancies,
     };
   }
 
