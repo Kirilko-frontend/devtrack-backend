@@ -1,5 +1,5 @@
 import { ApiPropertyOptional } from '@nestjs/swagger';
-import { IsEnum, IsInt, IsOptional, IsString } from 'class-validator';
+import { IsEnum, IsInt, IsOptional, IsString, IsUrl } from 'class-validator';
 
 export enum VacancyStatus {
   SAVED = 'SAVED',
@@ -25,6 +25,14 @@ export class VacanciesUpdateDto {
   @IsOptional()
   @IsString()
   description?: string;
+
+  @ApiPropertyOptional({
+    example: 'https://linkedin.com/jobs/123',
+    description: 'Vacancy url',
+  })
+  @IsOptional()
+  @IsUrl()
+  url?: string;
 
   @ApiPropertyOptional({
     example: '3000-5000 USD',
