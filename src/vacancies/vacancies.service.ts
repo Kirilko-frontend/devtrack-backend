@@ -2,24 +2,82 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 
 import { PrismaService } from 'src/prisma/prisma.service';
 
-import { VacanciesCreateDto, VacanciesUpdateDto } from './dto';
+import { VacanciesCreateDto, VacanciesQueryDto, VacanciesUpdateDto } from './dto';
+import { VacancySort, VacancyStatusFilter } from './dto/vacancies-query-dto';
 
 @Injectable()
 export class VacanciesService {
   constructor(private prismaClient: PrismaService) {}
 
-  async findAll(userId: number) {
-    return await this.prismaClient.vacancy.findMany({
-      where: {
-        company: {
-          userId,
+async findAll(userId: number, query: VacanciesQueryDto) {
+  const page = query.page ?? 1;
+  const limit = query.limit ?? 10;
+  const search = query.search?.trim();
+  const status = query.status ?? VacancyStatusFilter.ALL;
+  const sort = query.sort ?? VacancySort.NEWEST;
+
+  const skip = (page - 1) * limit;
+
+  const where = {
+    company: {
+      userId,
+    },
+    ...(status !== VacancyStatusFilter.ALL && {
+      status,
+    }),
+    ...(search && {
+      OR: [
+        {
+          title: {
+            contains: search,
+            mode: 'insensitive' as const,
+          },
         },
-      },
+        {
+          company: {
+            name: {
+              contains: search,
+              mode: 'insensitive' as const,
+            },
+          },
+        },
+      ],
+    }),
+  };
+
+  const orderBy =
+    sort === VacancySort.OLDEST
+      ? { createdAt: 'asc' as const }
+      : sort === VacancySort.TITLE
+        ? { title: 'asc' as const }
+        : { createdAt: 'desc' as const };
+
+  const [data, total] = await this.prismaClient.$transaction([
+    this.prismaClient.vacancy.findMany({
+      where,
       include: {
         company: true,
       },
-    });
-  }
+      skip,
+      take: limit,
+      orderBy,
+    }),
+
+    this.prismaClient.vacancy.count({
+      where,
+    }),
+  ]);
+
+  return {
+    data,
+    meta: {
+      page,
+      limit,
+      total,
+      totalPages: Math.ceil(total / limit),
+    },
+  };
+}
 
   async findOne(id: number, userId: number) {
     const vacancy = await this.prismaClient.vacancy.findFirst({

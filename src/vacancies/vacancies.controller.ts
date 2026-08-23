@@ -7,6 +7,7 @@ import {
   ParseIntPipe,
   Patch,
   Post,
+  Query,
   Request,
   UseGuards,
 } from '@nestjs/common';
@@ -25,6 +26,7 @@ import { ApiErrors } from 'src/common/swagger/api-errors.decorator';
 import { VacanciesService } from './vacancies.service';
 import {
   VacanciesCreateDto,
+  VacanciesQueryDto,
   VacanciesResponseDto,
   VacanciesUpdateDto,
 } from './dto';
@@ -47,8 +49,8 @@ export class VacanciesController {
     description: 'Vacancies successfully returned.',
     type: [VacanciesResponseDto],
   })
-  findAll(@Request() req) {
-    return this.vacanciesService.findAll(req.user.id);
+  findAll(@Request() req,@Query() query: VacanciesQueryDto,) {
+    return this.vacanciesService.findAll(req.user.id, query);
   }
 
   @Get(':id/history')
