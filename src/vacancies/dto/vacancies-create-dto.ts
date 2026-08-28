@@ -1,5 +1,5 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { IsInt, IsOptional, IsString } from 'class-validator';
+import { IsInt, IsOptional, IsString,IsDateString } from 'class-validator';
 
 export class VacanciesCreateDto {
   @ApiProperty({
@@ -32,6 +32,14 @@ export class VacanciesCreateDto {
   @IsOptional()
   @IsString()
   salary?: string;
+
+  @ApiPropertyOptional({
+  example: '2026-08-28',
+  description: 'Date when the vacancy application was submitted',
+})
+@IsOptional()
+@IsDateString()
+appliedAt?: string;
 
   @ApiProperty({
     example: 1,

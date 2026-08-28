@@ -37,7 +37,7 @@ model Vacancy {
   description      String?
   url              String?
   salary           String?
-  status           VacancyStatus    @default(SAVED)
+  status           VacancyStatus    @default(APPLIED)
   appliedAt        DateTime?
   userId           Int
   companyId        Int
