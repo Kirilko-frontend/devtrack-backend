@@ -1,5 +1,7 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { IsInt, IsOptional, IsString,IsDateString } from 'class-validator';
+import { IsDateString, IsEnum, IsInt, IsOptional, IsString } from 'class-validator';
+
+import { VacancyStatus } from '@prisma/client';
 
 export class VacanciesCreateDto {
   @ApiProperty({
@@ -34,12 +36,21 @@ export class VacanciesCreateDto {
   salary?: string;
 
   @ApiPropertyOptional({
-  example: '2026-08-28',
-  description: 'Date when the vacancy application was submitted',
-})
-@IsOptional()
-@IsDateString()
-appliedAt?: string;
+    example: '2026-08-28',
+    description: 'Date when the vacancy application was submitted',
+  })
+  @IsOptional()
+  @IsDateString()
+  appliedAt?: string;
+
+  @ApiPropertyOptional({
+    example: VacancyStatus.APPLIED,
+    enum: VacancyStatus,
+    description: 'Current vacancy status',
+  })
+  @IsOptional()
+  @IsEnum(VacancyStatus)
+  status?: VacancyStatus;
 
   @ApiProperty({
     example: 1,

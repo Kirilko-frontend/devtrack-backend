@@ -128,27 +128,27 @@ export class VacanciesService {
     });
   }
 
-  async create(data: VacanciesCreateDto, userId: number) {
-    const company = await this.prismaClient.company.findFirst({
-      where: {
-        id: data.companyId,
-        userId,
-      },
-    });
+async create(data: VacanciesCreateDto, userId: number) {
+  const company = await this.prismaClient.company.findFirst({
+    where: {
+      id: data.companyId,
+      userId,
+    },
+  });
 
-    if (!company) {
-      throw new NotFoundException('Company not found');
-    }
-
-    return this.prismaClient.vacancy.create({
-      data: {
-        ...data,
-        userId,
-        status: VacancyStatus.APPLIED,
-        appliedAt: data.appliedAt ? new Date(data.appliedAt) : new Date(),
-      },
-    });
+  if (!company) {
+    throw new NotFoundException('Company not found');
   }
+
+  return this.prismaClient.vacancy.create({
+    data: {
+      ...data,
+      userId,
+      status: data.status ?? VacancyStatus.APPLIED,
+      appliedAt: data.appliedAt ? new Date(data.appliedAt) : new Date(),
+    },
+  });
+}
 
   async update(id: number, data: VacanciesUpdateDto, userId: number) {
     const vacancy = await this.prismaClient.vacancy.findFirst({
