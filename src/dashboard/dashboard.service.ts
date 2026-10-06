@@ -23,8 +23,7 @@ export class DashboardService {
       this.getRecentVacancies(userId),
     ]);
 
-    const applicationActivity =
-      this.groupApplicationsByDay(applicationHistory);
+    const applicationActivity = this.groupApplicationsByDay(applicationHistory);
 
     return {
       stats,
@@ -40,34 +39,33 @@ export class DashboardService {
    * Total numbers displayed in dashboard cards.
    */
   private async getStats(userId: number) {
-    const [vacancies, companies, interviews, resumes] =
-      await Promise.all([
-        this.prisma.vacancy.count({
-          where: {
+    const [vacancies, companies, interviews, resumes] = await Promise.all([
+      this.prisma.vacancy.count({
+        where: {
+          userId,
+        },
+      }),
+
+      this.prisma.company.count({
+        where: {
+          userId,
+        },
+      }),
+
+      this.prisma.interview.count({
+        where: {
+          vacancy: {
             userId,
           },
-        }),
+        },
+      }),
 
-        this.prisma.company.count({
-          where: {
-            userId,
-          },
-        }),
-
-        this.prisma.interview.count({
-          where: {
-            vacancy: {
-              userId,
-            },
-          },
-        }),
-
-        this.prisma.resume.count({
-          where: {
-            userId,
-          },
-        }),
-      ]);
+      this.prisma.resume.count({
+        where: {
+          userId,
+        },
+      }),
+    ]);
 
     return {
       totalVacancies: vacancies,
@@ -81,48 +79,44 @@ export class DashboardService {
    * Number of vacancies for each status.
    */
   private async getVacancyStatuses(userId: number) {
-    const [
-      saved,
-      applied,
-      interviewing,
-      offered,
-      rejected,
-    ] = await Promise.all([
-      this.prisma.vacancy.count({
-        where: {
-          userId,
-          status: 'SAVED',
-        },
-      }),
+    const [saved, applied, interviewing, offered, rejected] = await Promise.all(
+      [
+        this.prisma.vacancy.count({
+          where: {
+            userId,
+            status: 'SAVED',
+          },
+        }),
 
-      this.prisma.vacancy.count({
-        where: {
-          userId,
-          status: 'APPLIED',
-        },
-      }),
+        this.prisma.vacancy.count({
+          where: {
+            userId,
+            status: 'APPLIED',
+          },
+        }),
 
-      this.prisma.vacancy.count({
-        where: {
-          userId,
-          status: 'INTERVIEWING',
-        },
-      }),
+        this.prisma.vacancy.count({
+          where: {
+            userId,
+            status: 'INTERVIEWING',
+          },
+        }),
 
-      this.prisma.vacancy.count({
-        where: {
-          userId,
-          status: 'OFFERED',
-        },
-      }),
+        this.prisma.vacancy.count({
+          where: {
+            userId,
+            status: 'OFFERED',
+          },
+        }),
 
-      this.prisma.vacancy.count({
-        where: {
-          userId,
-          status: 'REJECTED',
-        },
-      }),
-    ]);
+        this.prisma.vacancy.count({
+          where: {
+            userId,
+            status: 'REJECTED',
+          },
+        }),
+      ],
+    );
 
     return {
       saved,
@@ -164,15 +158,18 @@ export class DashboardService {
    * Application history used for the activity chart.
    */
   private async getApplicationHistory(userId: number) {
-    return this.prisma.vacancyHistory.findMany({
+    return this.prisma.vacancy.findMany({
       where: {
-        newStatus: 'APPLIED',
-        vacancy: {
-          userId,
+        userId,
+        appliedAt: {
+          not: null,
         },
       },
       orderBy: {
-        changedAt: 'asc',
+        appliedAt: 'asc',
+      },
+      select: {
+        appliedAt: true,
       },
     });
   }
@@ -223,94 +220,69 @@ export class DashboardService {
     previousPeriodStart.setDate(now.getDate() - 14);
 
     const [current, previous] = await Promise.all([
-      this.getPeriodStats(
-        userId,
-        currentPeriodStart,
-        now,
-      ),
+      this.getPeriodStats(userId, currentPeriodStart, now),
 
-      this.getPeriodStats(
-        userId,
-        previousPeriodStart,
-        currentPeriodStart,
-      ),
+      this.getPeriodStats(userId, previousPeriodStart, currentPeriodStart),
     ]);
 
     return {
-      vacancies: this.calculateChange(
-        current.vacancies,
-        previous.vacancies,
-      ),
+      vacancies: this.calculateChange(current.vacancies, previous.vacancies),
 
-      companies: this.calculateChange(
-        current.companies,
-        previous.companies,
-      ),
+      companies: this.calculateChange(current.companies, previous.companies),
 
-      interviews: this.calculateChange(
-        current.interviews,
-        previous.interviews,
-      ),
+      interviews: this.calculateChange(current.interviews, previous.interviews),
 
-      resumes: this.calculateChange(
-        current.resumes,
-        previous.resumes,
-      ),
+      resumes: this.calculateChange(current.resumes, previous.resumes),
     };
   }
 
   /**
    * Statistics for a specific time period.
    */
-  private async getPeriodStats(
-    userId: number,
-    startDate: Date,
-    endDate: Date,
-  ) {
-    const [vacancies, companies, interviews, resumes] =
-      await Promise.all([
-        this.prisma.vacancy.count({
-          where: {
-            userId,
-            createdAt: {
-              gte: startDate,
-              lt: endDate,
-            },
+  private async getPeriodStats(userId: number, startDate: Date, endDate: Date) {
+    const [vacancies, companies, interviews, resumes] = await Promise.all([
+      this.prisma.vacancy.count({
+        where: {
+          userId,
+          createdAt: {
+            gte: startDate,
+            lt: endDate,
           },
-        }),
+        },
+      }),
 
-        this.prisma.company.count({
-          where: {
-            userId,
-            createdAt: {
-              gte: startDate,
-              lt: endDate,
-            },
+      this.prisma.company.count({
+        where: {
+          userId,
+          createdAt: {
+            gte: startDate,
+            lt: endDate,
           },
-        }),
+        },
+      }),
 
-        this.prisma.interview.count({
-          where: {
-            date: {
-              gte: startDate,
-              lt: endDate,
-            },
-            vacancy: {
-              userId,
-            },
+      this.prisma.interview.count({
+        where: {
+          date: {
+            gte: startDate,
+            lt: endDate,
           },
-        }),
-
-        this.prisma.resume.count({
-          where: {
+          vacancy: {
             userId,
-            createdAt: {
-              gte: startDate,
-              lt: endDate,
-            },
           },
-        }),
-      ]);
+        },
+      }),
+
+      this.prisma.resume.count({
+        where: {
+          userId,
+          createdAt: {
+            gte: startDate,
+            lt: endDate,
+          },
+        },
+      }),
+    ]);
 
     return {
       vacancies,
@@ -323,43 +295,33 @@ export class DashboardService {
   /**
    * Calculates percentage change between two values.
    */
-  private calculateChange(
-    current: number,
-    previous: number,
-  ) {
+  private calculateChange(current: number, previous: number) {
     if (previous === 0) {
       return current === 0 ? 0 : 100;
     }
 
-    return Math.round(
-      ((current - previous) / previous) * 100,
-    );
+    return Math.round(((current - previous) / previous) * 100);
   }
 
   /**
    * Groups application history by day.
    */
-  private groupApplicationsByDay(
-    history: { changedAt: Date }[],
-  ) {
+  private groupApplicationsByDay(applications: { appliedAt: Date | null }[]) {
     const grouped = new Map<string, number>();
 
-    for (const item of history) {
-      const date = item.changedAt
-        .toISOString()
-        .split('T')[0];
+    for (const application of applications) {
+      if (!application.appliedAt) {
+        continue;
+      }
 
-      grouped.set(
-        date,
-        (grouped.get(date) ?? 0) + 1,
-      );
+      const date = application.appliedAt.toISOString().split('T')[0];
+
+      grouped.set(date, (grouped.get(date) ?? 0) + 1);
     }
 
-    return Array.from(grouped.entries()).map(
-      ([date, count]) => ({
-        date,
-        count,
-      }),
-    );
+    return Array.from(grouped.entries()).map(([date, count]) => ({
+      date,
+      count,
+    }));
   }
 }

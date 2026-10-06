@@ -14,6 +14,16 @@ export class InterviewsService {
           userId,
         },
       },
+      include: {
+        vacancy: {
+          include: {
+            company: true,
+          },
+        },
+      },
+      orderBy: {
+        date: 'asc',
+      },
     });
   }
 
