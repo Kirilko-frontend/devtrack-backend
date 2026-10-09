@@ -14,6 +14,7 @@ import {
   BadRequestException,
   Res,
 } from '@nestjs/common';
+import { FileInterceptor } from '@nestjs/platform-express';
 
 import {
   ApiBearerAuth,
@@ -31,7 +32,12 @@ import { ApiErrors } from 'src/common/swagger/api-errors.decorator';
 
 import { ResumesService } from './resumes.service';
 
-import { ResumesCreateDto, ResumesUpdateDto, ResumesResponseDto } from './dto';
+import {
+  ResumesCreateDto,
+  ResumesUpdateDto,
+  ResumesResponseDto,
+  ResumesUploadDto,
+} from './dto';
 
 @ApiTags('Resumes')
 @ApiBearerAuth()
@@ -170,9 +176,10 @@ export class ResumesController {
     description: 'Resume uploaded successfully.',
     type: ResumesResponseDto,
   })
+  @UseInterceptors(FileInterceptor('file'))
   upload(
     @UploadedFile() file: Express.Multer.File,
-    @Body() data: ResumesCreateDto,
+    @Body() data: ResumesUploadDto,
     @Request() req,
   ) {
     if (!file) {

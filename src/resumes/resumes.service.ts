@@ -1,9 +1,33 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { join } from 'path';
+import { open } from 'fs/promises';
+import { extname, join } from 'path';
 import { Response } from 'express';
 
 import { PrismaService } from 'src/prisma/prisma.service';
 import { ResumesCreateDto, ResumesUpdateDto } from './dto';
+
+async function getFileExtension(filePath: string) {
+  const extension = extname(filePath);
+
+  if (extension) {
+    return extension;
+  }
+
+  const file = await open(filePath, 'r');
+
+  try {
+    const header = Buffer.alloc(5);
+    const { bytesRead } = await file.read(header, 0, header.length, 0);
+
+    if (bytesRead === header.length && header.toString('ascii') === '%PDF-') {
+      return '.pdf';
+    }
+  } finally {
+    await file.close();
+  }
+
+  return '';
+}
 
 @Injectable()
 export class ResumesService {
@@ -80,6 +104,9 @@ export class ResumesService {
       throw new NotFoundException('Resume not found');
     }
 
-    return res.sendFile(join(process.cwd(), resume.filePath));
+    const filePath = join(process.cwd(), resume.filePath);
+    const extension = await getFileExtension(filePath);
+
+    return res.download(filePath, `${resume.name}${extension}`);
   }
 }

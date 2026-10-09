@@ -1,4 +1,5 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { Type } from 'class-transformer';
 import { IsInt, IsNotEmpty, IsOptional, IsString } from 'class-validator';
 
 export class ResumesCreateDto {
@@ -23,6 +24,7 @@ export class ResumesCreateDto {
     description: 'Related vacancy id',
   })
   @IsOptional()
+  @Type(() => Number)
   @IsInt()
   vacancyId?: number;
 }
