@@ -61,6 +61,11 @@ export class InterviewsService {
         ...data,
         vacancyId: vacancy.id,
       },
+      include: {
+        vacancy: {
+          include: { company: true },
+        },
+      },
     });
   }
 
@@ -78,11 +83,24 @@ export class InterviewsService {
       throw new NotFoundException('Interview not found');
     }
 
+    if (data.vacancyId && data.vacancyId !== interview.vacancyId) {
+      const vacancy = await this.prisma.vacancy.findFirst({
+        where: { id: data.vacancyId, userId },
+      });
+
+      if (!vacancy) {
+        throw new NotFoundException('Vacancy not found');
+      }
+    }
+
     return this.prisma.interview.update({
-      where: {
-        id,
-      },
+      where: { id },
       data,
+      include: {
+        vacancy: {
+          include: { company: true },
+        },
+      },
     });
   }
 
