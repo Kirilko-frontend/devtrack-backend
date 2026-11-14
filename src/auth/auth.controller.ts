@@ -17,6 +17,16 @@ import { AuthService } from './auth.service';
 import { UsersResponseDto } from 'src/users/dto';
 import { AuthLoginDto, AuthRegisterDto, AuthResponseDto } from './dto';
 
+const getCookieOptions = () => {
+  const isProd = process.env.NODE_ENV === 'production';
+
+  return {
+    httpOnly: true,
+    secure: isProd,
+    sameSite: isProd ? ('none' as const) : ('lax' as const),
+  };
+};
+
 @ApiTags('Auth')
 @ApiErrors()
 @Controller('auth')
@@ -60,9 +70,7 @@ export class AuthController {
     const result = await this.authService.login(data);
 
     res.cookie('access_token', result.access_token, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'lax',
+      ...getCookieOptions(),
       maxAge: 24 * 60 * 60 * 1000,
     });
 
@@ -97,11 +105,7 @@ export class AuthController {
     description: 'User successfully logged out',
   })
   logout(@Res({ passthrough: true }) res: Response) {
-    res.clearCookie('access_token', {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'lax',
-    });
+    res.clearCookie('access_token', getCookieOptions());
 
     return {
       message: 'Logout successful',
