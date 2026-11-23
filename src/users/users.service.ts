@@ -92,26 +92,6 @@ export class UsersService {
       throw new NotFoundException('User not found');
     }
 
-    await this.prisma.interview.deleteMany({
-      where: {
-        vacancy: {
-          userId: id,
-        },
-      },
-    });
-
-    await this.prisma.vacancy.deleteMany({
-      where: {
-        userId: id,
-      },
-    });
-
-    await this.prisma.resume.deleteMany({
-      where: {
-        userId: id,
-      },
-    });
-
     return this.prisma.user.delete({
       where: {
         id,
