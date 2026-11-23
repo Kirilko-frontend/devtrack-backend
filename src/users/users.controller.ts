@@ -16,7 +16,7 @@ import {
   ApiResponse,
   ApiTags,
 } from '@nestjs/swagger';
-import { getCookieOptions } from 'src/auth/cookie-options';
+import { clearAuthCookies } from 'src/auth/cookie-options';
 import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
 import { ApiErrors } from 'src/common/swagger/api-errors.decorator';
 
@@ -75,7 +75,7 @@ export class UsersController {
   async deleteMe(@Request() req, @Res({ passthrough: true }) res: Response) {
     await this.usersService.delete(req.user.id);
 
-    res.clearCookie('access_token', getCookieOptions());
+    clearAuthCookies(res);
 
     return {
       message: 'User deleted',

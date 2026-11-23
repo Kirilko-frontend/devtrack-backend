@@ -68,17 +68,36 @@ export class UsersService {
       }
     }
 
-    if (updateData.password) {
-      updateData.password = await bcrypt.hash(updateData.password, 10);
+    if (!updateData.password) {
+      return this.prisma.user.update({
+        where: {
+          id,
+        },
+        data: updateData,
+        select: UsersSelect,
+      });
     }
 
-    return this.prisma.user.update({
-      where: {
-        id,
-      },
-      data: updateData,
-      select: UsersSelect,
-    });
+    updateData.password = await bcrypt.hash(updateData.password, 10);
+
+    // Password change revokes all sessions: every refresh token is deleted.
+    const [user] = await this.prisma.$transaction([
+      this.prisma.user.update({
+        where: {
+          id,
+        },
+        data: updateData,
+        select: UsersSelect,
+      }),
+
+      this.prisma.refreshToken.deleteMany({
+        where: {
+          userId: id,
+        },
+      }),
+    ]);
+
+    return user;
   }
 
   async delete(id: number) {
