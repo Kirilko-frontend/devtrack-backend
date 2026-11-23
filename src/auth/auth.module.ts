@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { JwtModule } from '@nestjs/jwt';
+import type { StringValue } from 'ms';
 
 import { AuthController } from './auth.controller';
 import { AuthService } from './auth.service';
@@ -20,7 +21,7 @@ import { JwtStrategy } from './jwt.strategy';
         secret: configService.getOrThrow<string>('JWT_SECRET'),
 
         signOptions: {
-          expiresIn: '1d',
+          expiresIn: configService.get<StringValue>('JWT_EXPIRES_IN', '15m'),
         },
       }),
     }),

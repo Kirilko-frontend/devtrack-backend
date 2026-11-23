@@ -2,21 +2,29 @@ import {
   Body,
   Controller,
   Get,
+  HttpCode,
   Post,
   Request,
   Res,
   UseGuards,
 } from '@nestjs/common';
 
-import type { Response } from 'express';
+import type { Request as ExpressRequest, Response } from 'express';
 import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { ApiErrors } from 'src/common/swagger/api-errors.decorator';
 
 import { JwtAuthGuard } from './jwt-auth.guard';
 import { AuthService } from './auth.service';
 import { UsersResponseDto } from 'src/users/dto';
-import { AuthLoginDto, AuthRegisterDto, AuthResponseDto } from './dto';
-import { getCookieOptions } from './cookie-options';
+import { AuthLoginDto, AuthRegisterDto } from './dto';
+import {
+  REFRESH_TOKEN_COOKIE,
+  clearAuthCookies,
+  setAuthCookies,
+} from './cookie-options';
+
+const getRefreshToken = (req: ExpressRequest): string | undefined =>
+  req.cookies?.[REFRESH_TOKEN_COOKIE];
 
 @ApiTags('Auth')
 @ApiErrors()
@@ -44,11 +52,12 @@ export class AuthController {
   @Post('login')
   @ApiOperation({
     summary: 'Login user',
+    description:
+      'Sets access_token and refresh_token httpOnly cookies on success.',
   })
   @ApiResponse({
-    status: 200,
-    description: 'Returns JWT token',
-    type: AuthResponseDto,
+    status: 201,
+    description: 'Login successful, auth cookies are set',
   })
   @ApiResponse({
     status: 401,
@@ -58,15 +67,46 @@ export class AuthController {
     @Body() data: AuthLoginDto,
     @Res({ passthrough: true }) res: Response,
   ) {
-    const result = await this.authService.login(data);
+    const tokens = await this.authService.login(data);
 
-    res.cookie('access_token', result.access_token, {
-      ...getCookieOptions(),
-      maxAge: 24 * 60 * 60 * 1000,
-    });
+    setAuthCookies(res, tokens);
 
     return {
       message: 'Login successful',
+    };
+  }
+
+  @Post('refresh')
+  @HttpCode(200)
+  @ApiOperation({
+    summary: 'Refresh access token',
+    description:
+      'Uses refresh_token cookie, rotates it and sets a new pair of auth cookies.',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Tokens successfully refreshed',
+  })
+  @ApiResponse({
+    status: 401,
+    description: 'Refresh token is missing, invalid or expired',
+  })
+  async refresh(
+    @Request() req: ExpressRequest,
+    @Res({ passthrough: true }) res: Response,
+  ) {
+    try {
+      const tokens = await this.authService.refresh(getRefreshToken(req));
+
+      setAuthCookies(res, tokens);
+    } catch (error) {
+      clearAuthCookies(res);
+
+      throw error;
+    }
+
+    return {
+      message: 'Token refreshed',
     };
   }
 
@@ -90,13 +130,19 @@ export class AuthController {
   @Post('logout')
   @ApiOperation({
     summary: 'Logout user',
+    description: 'Revokes refresh token and clears auth cookies.',
   })
   @ApiResponse({
     status: 200,
     description: 'User successfully logged out',
   })
-  logout(@Res({ passthrough: true }) res: Response) {
-    res.clearCookie('access_token', getCookieOptions());
+  async logout(
+    @Request() req: ExpressRequest,
+    @Res({ passthrough: true }) res: Response,
+  ) {
+    await this.authService.logout(getRefreshToken(req));
+
+    clearAuthCookies(res);
 
     return {
       message: 'Logout successful',
