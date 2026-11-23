@@ -12,6 +12,7 @@ REST API for **DevTrack**, a job application tracker that replaces the messy Exc
 
 - Cookie-based JWT authentication (register, login, logout, current user)
 - Short-lived access token + rotating refresh token (stored hashed in DB, revoked on logout and password change)
+- Password reset via emailed single-use link (Brevo in production, Mailpit locally)
 - Companies: create, edit, list, delete
 - Vacancies linked to companies, with statuses (`SAVED`, `APPLIED`, `INTERVIEWING`, `OFFERED`, `REJECTED`)
 - Vacancy status history (every status change is recorded)
@@ -55,6 +56,9 @@ JWT_EXPIRES_IN=15m
 REFRESH_TOKEN_EXPIRES_DAYS=7
 PORT=3000
 FRONTEND_URL=http://localhost:5173
+BREVO_API_KEY=
+MAIL_FROM=your-verified-sender@example.com
+MAILPIT_URL=http://localhost:8025
 ```
 
 | Variable | Description |
@@ -64,7 +68,12 @@ FRONTEND_URL=http://localhost:5173
 | `JWT_EXPIRES_IN` | Access token lifetime, e.g. `15m`, `1h` (default `15m`) |
 | `REFRESH_TOKEN_EXPIRES_DAYS` | Refresh token lifetime in days (default `7`) |
 | `PORT` | Server port (Render sets this automatically) |
-| `FRONTEND_URL` | Allowed CORS origin (no trailing slash) |
+| `FRONTEND_URL` | Allowed CORS origin and base URL for links in emails (no trailing slash) |
+| `BREVO_API_KEY` | Brevo API key, used to send emails in production |
+| `MAIL_FROM` | Sender email, must be verified in Brevo |
+| `MAIL_FROM_NAME` | Sender name (default `DevTrack`) |
+| `MAILPIT_URL` | Local Mailpit URL for development, e.g. `http://localhost:8025` |
+| `PASSWORD_RESET_EXPIRES_MINUTES` | Reset link lifetime in minutes (default `30`) |
 
 Generate a secret:
 
@@ -96,14 +105,22 @@ The API will be available at `http://localhost:3000`.
 
 | Area | Endpoints |
 |---|---|
-| Auth | `POST /auth/register`, `POST /auth/login`, `POST /auth/refresh`, `GET /auth/me`, `POST /auth/logout` |
+| Auth | `POST /auth/register`, `POST /auth/login`, `POST /auth/refresh`, `GET /auth/me`, `POST /auth/logout`, `POST /auth/forgot-password`, `POST /auth/reset-password` |
 | Users | `GET /users/me`, `PATCH /users/me`, `DELETE /users/me` |
 | Companies | CRUD under `/companies` |
 | Vacancies | CRUD under `/vacancies` |
 | Interviews | CRUD under `/interviews` |
 | Dashboard | `GET /dashboard` |
 
-All endpoints except register and login require authentication.
+All endpoints except register, login, refresh, forgot-password and reset-password require authentication.
+
+## Emails
+
+Render's free plan blocks outbound SMTP ports, so emails are sent over HTTP:
+
+- **Production:** create a free [Brevo](https://www.brevo.com) account, verify a sender email, create an API key and set `BREVO_API_KEY` and `MAIL_FROM`.
+- **Local:** `docker compose` starts [Mailpit](https://mailpit.axllent.org); open http://localhost:8025 to see sent emails.
+- If neither is configured in development, the email text (with the link) is printed to the server log.
 
 ## Deployment (Render)
 
