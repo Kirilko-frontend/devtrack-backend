@@ -16,7 +16,13 @@ import { ApiErrors } from 'src/common/swagger/api-errors.decorator';
 import { JwtAuthGuard } from './jwt-auth.guard';
 import { AuthService } from './auth.service';
 import { UsersResponseDto } from 'src/users/dto';
-import { AuthLoginDto, AuthRegisterDto } from './dto';
+import {
+  AuthForgotPasswordDto,
+  AuthLoginDto,
+  AuthRegisterDto,
+  AuthResetPasswordDto,
+} from './dto';
+import { PasswordResetService } from './password-reset.service';
 import {
   REFRESH_TOKEN_COOKIE,
   clearAuthCookies,
@@ -30,7 +36,10 @@ const getRefreshToken = (req: ExpressRequest): string | undefined =>
 @ApiErrors()
 @Controller('auth')
 export class AuthController {
-  constructor(private authService: AuthService) {}
+  constructor(
+    private authService: AuthService,
+    private passwordResetService: PasswordResetService,
+  ) {}
 
   @Post('register')
   @ApiOperation({
@@ -107,6 +116,48 @@ export class AuthController {
 
     return {
       message: 'Token refreshed',
+    };
+  }
+
+  @Post('forgot-password')
+  @HttpCode(200)
+  @ApiOperation({
+    summary: 'Request password reset link',
+    description:
+      'Sends a reset link to the email if an account exists. The response is the same either way.',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Request accepted',
+  })
+  async forgotPassword(@Body() data: AuthForgotPasswordDto) {
+    await this.passwordResetService.requestReset(data.email);
+
+    return {
+      message:
+        'If an account with this email exists, a reset link has been sent',
+    };
+  }
+
+  @Post('reset-password')
+  @HttpCode(200)
+  @ApiOperation({
+    summary: 'Set a new password using the reset link token',
+    description: 'Token is single-use. All active sessions are logged out.',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Password successfully changed',
+  })
+  @ApiResponse({
+    status: 400,
+    description: 'Reset link is invalid or has expired',
+  })
+  async resetPassword(@Body() data: AuthResetPasswordDto) {
+    await this.passwordResetService.resetPassword(data.token, data.password);
+
+    return {
+      message: 'Password has been changed',
     };
   }
 
