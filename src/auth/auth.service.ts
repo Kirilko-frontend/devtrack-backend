@@ -2,12 +2,12 @@ import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 
 import * as bcrypt from 'bcrypt';
-import { createHash, randomBytes } from 'crypto';
 import { JwtService } from '@nestjs/jwt';
 
 import { PrismaService } from 'src/prisma/prisma.service';
 import { UsersService } from 'src/users/users.service';
 import { AuthLoginDto, AuthRegisterDto } from './dto';
+import { generateToken, hashToken } from './token.utils';
 
 export interface AuthTokens {
   accessToken: string;
@@ -17,9 +17,6 @@ export interface AuthTokens {
 }
 
 const DAY_MS = 24 * 60 * 60 * 1000;
-
-const hashToken = (token: string) =>
-  createHash('sha256').update(token).digest('hex');
 
 @Injectable()
 export class AuthService {
@@ -132,7 +129,7 @@ export class AuthService {
 
     const { exp } = this.jwtService.decode<{ exp: number }>(accessToken);
 
-    const refreshToken = randomBytes(48).toString('base64url');
+    const refreshToken = generateToken();
 
     const refreshTokenDays = Number(
       this.configService.get('REFRESH_TOKEN_EXPIRES_DAYS', 7),
