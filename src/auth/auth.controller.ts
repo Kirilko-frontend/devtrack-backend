@@ -16,16 +16,7 @@ import { JwtAuthGuard } from './jwt-auth.guard';
 import { AuthService } from './auth.service';
 import { UsersResponseDto } from 'src/users/dto';
 import { AuthLoginDto, AuthRegisterDto, AuthResponseDto } from './dto';
-
-const getCookieOptions = () => {
-  const isProd = process.env.NODE_ENV === 'production';
-
-  return {
-    httpOnly: true,
-    secure: isProd,
-    sameSite: isProd ? ('none' as const) : ('lax' as const),
-  };
-};
+import { getCookieOptions } from './cookie-options';
 
 @ApiTags('Auth')
 @ApiErrors()

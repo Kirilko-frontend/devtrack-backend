@@ -14,18 +14,6 @@ import { UsersSelect } from './prisma/selects/users-select';
 export class UsersService {
   constructor(private prisma: PrismaService) {}
 
-  async findAll(): Promise<UsersResponseDto[]> {
-    const users = await this.prisma.user.findMany({
-      select: UsersSelect,
-    });
-
-    if (users.length === 0) {
-      throw new NotFoundException('No users found');
-    }
-
-    return users;
-  }
-
   async create(data: UsersCreateDto) {
     const existingUser = await this.prisma.user.findUnique({
       where: {
@@ -44,6 +32,7 @@ export class UsersService {
         ...data,
         password: hashedPassword,
       },
+      select: UsersSelect,
     });
   }
 
@@ -88,6 +77,7 @@ export class UsersService {
         id,
       },
       data: updateData,
+      select: UsersSelect,
     });
   }
 
