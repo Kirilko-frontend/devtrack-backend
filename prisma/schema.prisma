@@ -7,16 +7,42 @@ datasource db {
 }
 
 model User {
-  id        Int       @id @default(autoincrement())
-  email     String    @unique
-  password  String
-  createdAt DateTime  @default(now())
-  updatedAt DateTime  @updatedAt
-  companies Company[]
-  resumes   Resume[]
-  vacancies Vacancy[]
+  id                  Int                  @id @default(autoincrement())
+  email               String               @unique
+  password            String
+  createdAt           DateTime             @default(now())
+  updatedAt           DateTime             @updatedAt
+  companies           Company[]
+  resumes             Resume[]
+  vacancies           Vacancy[]
+  refreshTokens       RefreshToken[]
+  passwordResetTokens PasswordResetToken[]
 
   @@map("users")
+}
+
+model PasswordResetToken {
+  id        Int      @id @default(autoincrement())
+  tokenHash String   @unique
+  userId    Int
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("password_reset_tokens")
+}
+
+model RefreshToken {
+  id        Int      @id @default(autoincrement())
+  tokenHash String   @unique
+  userId    Int
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("refresh_tokens")
 }
 
 model Company {
@@ -25,7 +51,7 @@ model Company {
   website   String?
   userId    Int
   createdAt DateTime  @default(now())
-  user      User      @relation(fields: [userId], references: [id])
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
   vacancies Vacancy[]
 
   @@map("companies")
@@ -45,8 +71,8 @@ model Vacancy {
   updatedAt        DateTime         @default(now()) @updatedAt
   interviews       Interview[]
   resumes          Resume[]
-  company          Company          @relation(fields: [companyId], references: [id])
-  user             User             @relation(fields: [userId], references: [id])
+  company          Company          @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  user             User             @relation(fields: [userId], references: [id], onDelete: Cascade)
   vacancyHistories VacancyHistory[]
 
   @@map("vacancies")
@@ -60,7 +86,7 @@ model Resume {
   vacancyId Int?
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-  user      User     @relation(fields: [userId], references: [id])
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   vacancy   Vacancy? @relation(fields: [vacancyId], references: [id])
 
   @@map("resumes")
@@ -72,7 +98,7 @@ model Interview {
   notes     String?
   types     InterviewType
   vacancyId Int
-  vacancy   Vacancy       @relation(fields: [vacancyId], references: [id])
+  vacancy   Vacancy       @relation(fields: [vacancyId], references: [id], onDelete: Cascade)
 
   @@map("interviews")
 }
@@ -83,7 +109,7 @@ model VacancyHistory {
   newStatus VacancyStatus
   vacancyId Int
   changedAt DateTime       @default(now())
-  vacancy   Vacancy        @relation(fields: [vacancyId], references: [id])
+  vacancy   Vacancy        @relation(fields: [vacancyId], references: [id], onDelete: Cascade)
 
   @@map("vacancy_histories")
 }

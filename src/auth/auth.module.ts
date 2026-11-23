@@ -1,17 +1,21 @@
 import { Module } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { JwtModule } from '@nestjs/jwt';
+import type { StringValue } from 'ms';
 
 import { AuthController } from './auth.controller';
 import { AuthService } from './auth.service';
 
+import { MailModule } from '../mail/mail.module';
 import { UsersModule } from '../users/users.module';
 
 import { JwtStrategy } from './jwt.strategy';
+import { PasswordResetService } from './password-reset.service';
 
 @Module({
   imports: [
     UsersModule,
+    MailModule,
 
     JwtModule.registerAsync({
       inject: [ConfigService],
@@ -20,7 +24,7 @@ import { JwtStrategy } from './jwt.strategy';
         secret: configService.getOrThrow<string>('JWT_SECRET'),
 
         signOptions: {
-          expiresIn: '1d',
+          expiresIn: configService.get<StringValue>('JWT_EXPIRES_IN', '15m'),
         },
       }),
     }),
@@ -28,6 +32,6 @@ import { JwtStrategy } from './jwt.strategy';
 
   controllers: [AuthController],
 
-  providers: [AuthService, JwtStrategy],
+  providers: [AuthService, PasswordResetService, JwtStrategy],
 })
 export class AuthModule {}

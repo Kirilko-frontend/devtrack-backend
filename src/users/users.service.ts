@@ -14,18 +14,6 @@ import { UsersSelect } from './prisma/selects/users-select';
 export class UsersService {
   constructor(private prisma: PrismaService) {}
 
-  async findAll(): Promise<UsersResponseDto[]> {
-    const users = await this.prisma.user.findMany({
-      select: UsersSelect,
-    });
-
-    if (users.length === 0) {
-      throw new NotFoundException('No users found');
-    }
-
-    return users;
-  }
-
   async create(data: UsersCreateDto) {
     const existingUser = await this.prisma.user.findUnique({
       where: {
@@ -44,6 +32,7 @@ export class UsersService {
         ...data,
         password: hashedPassword,
       },
+      select: UsersSelect,
     });
   }
 
@@ -79,16 +68,36 @@ export class UsersService {
       }
     }
 
-    if (updateData.password) {
-      updateData.password = await bcrypt.hash(updateData.password, 10);
+    if (!updateData.password) {
+      return this.prisma.user.update({
+        where: {
+          id,
+        },
+        data: updateData,
+        select: UsersSelect,
+      });
     }
 
-    return this.prisma.user.update({
-      where: {
-        id,
-      },
-      data: updateData,
-    });
+    updateData.password = await bcrypt.hash(updateData.password, 10);
+
+    // Password change revokes all sessions: every refresh token is deleted.
+    const [user] = await this.prisma.$transaction([
+      this.prisma.user.update({
+        where: {
+          id,
+        },
+        data: updateData,
+        select: UsersSelect,
+      }),
+
+      this.prisma.refreshToken.deleteMany({
+        where: {
+          userId: id,
+        },
+      }),
+    ]);
+
+    return user;
   }
 
   async delete(id: number) {
@@ -101,26 +110,6 @@ export class UsersService {
     if (!user) {
       throw new NotFoundException('User not found');
     }
-
-    await this.prisma.interview.deleteMany({
-      where: {
-        vacancy: {
-          userId: id,
-        },
-      },
-    });
-
-    await this.prisma.vacancy.deleteMany({
-      where: {
-        userId: id,
-      },
-    });
-
-    await this.prisma.resume.deleteMany({
-      where: {
-        userId: id,
-      },
-    });
 
     return this.prisma.user.delete({
       where: {

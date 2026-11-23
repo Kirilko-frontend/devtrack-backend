@@ -3,82 +3,52 @@ import {
   Controller,
   Delete,
   Get,
-  Param,
-  ParseIntPipe,
   Patch,
-  Post,
+  Request,
+  Res,
+  UseGuards,
 } from '@nestjs/common';
 
-import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+import type { Response } from 'express';
+import {
+  ApiBearerAuth,
+  ApiOperation,
+  ApiResponse,
+  ApiTags,
+} from '@nestjs/swagger';
+import { clearAuthCookies } from 'src/auth/cookie-options';
+import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
 import { ApiErrors } from 'src/common/swagger/api-errors.decorator';
 
 import { UsersService } from './users.service';
-import { UsersCreateDto, UsersResponseDto, UsersUpdateDto } from './dto';
+import { UsersResponseDto, UsersUpdateDto } from './dto';
 
 @ApiTags('Users')
+@ApiBearerAuth()
 @ApiErrors()
 @Controller('users')
+@UseGuards(JwtAuthGuard)
 export class UsersController {
   constructor(private usersService: UsersService) {}
 
-  @Get()
+  @Get('me')
   @ApiOperation({
-    summary: 'Get all users',
-    description: 'Returns a list of all registered users.',
+    summary: 'Get current user profile',
+    description: 'Returns the authenticated user.',
   })
   @ApiResponse({
     status: 200,
-    description: 'Users successfully returned.',
-    type: [UsersResponseDto],
-  })
-  @ApiResponse({
-    status: 404,
-    description: 'No users found.',
-  })
-  findAll() {
-    return this.usersService.findAll();
-  }
-
-  @Post()
-  @ApiOperation({
-    summary: 'Create user',
-    description: 'Creates a new user.',
-  })
-  @ApiResponse({
-    status: 201,
-    description: 'User successfully created.',
-    type: UsersCreateDto,
-  })
-  @ApiResponse({
-    status: 409,
-    description: 'Email already exists.',
-  })
-  create(@Body() data: UsersCreateDto) {
-    return this.usersService.create(data);
-  }
-
-  @Get(':id')
-  @ApiOperation({
-    summary: 'Get user by id',
-    description: 'Returns one user.',
-  })
-  @ApiResponse({
-    status: 200,
-    description: 'User successfully found.',
+    description: 'User successfully returned.',
     type: UsersResponseDto,
   })
-  @ApiResponse({
-    status: 404,
-    description: 'User not found.',
-  })
-  findOne(@Param('id', ParseIntPipe) id: number) {
-    return this.usersService.findOne(id);
+  findMe(@Request() req) {
+    return this.usersService.findOne(req.user.id);
   }
 
-  @Patch(':id')
+  @Patch('me')
   @ApiOperation({
-    summary: 'Update user',
-    description: 'Updates user data.',
+    summary: 'Update current user',
+    description: 'Updates email and/or password of the authenticated user.',
   })
   @ApiResponse({
     status: 200,
@@ -86,27 +56,29 @@ export class UsersController {
     type: UsersResponseDto,
   })
   @ApiResponse({
-    status: 404,
-    description: 'User not found.',
+    status: 409,
+    description: 'Email already exists.',
   })
-  update(@Param('id', ParseIntPipe) id: number, @Body() data: UsersUpdateDto) {
-    return this.usersService.update(id, data);
+  updateMe(@Body() data: UsersUpdateDto, @Request() req) {
+    return this.usersService.update(req.user.id, data);
   }
 
-  @Delete(':id')
+  @Delete('me')
   @ApiOperation({
-    summary: 'Delete user',
-    description: 'Deletes a user.',
+    summary: 'Delete current user',
+    description: 'Deletes the authenticated user and all their data.',
   })
   @ApiResponse({
     status: 200,
     description: 'User successfully deleted.',
   })
-  @ApiResponse({
-    status: 404,
-    description: 'User not found.',
-  })
-  delete(@Param('id', ParseIntPipe) id: number) {
-    return this.usersService.delete(id);
+  async deleteMe(@Request() req, @Res({ passthrough: true }) res: Response) {
+    await this.usersService.delete(req.user.id);
+
+    clearAuthCookies(res);
+
+    return {
+      message: 'User deleted',
+    };
   }
 }

@@ -2,36 +2,44 @@ import {
   Body,
   Controller,
   Get,
+  HttpCode,
   Post,
   Request,
   Res,
   UseGuards,
 } from '@nestjs/common';
 
-import type { Response } from 'express';
+import type { Request as ExpressRequest, Response } from 'express';
 import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { ApiErrors } from 'src/common/swagger/api-errors.decorator';
 
 import { JwtAuthGuard } from './jwt-auth.guard';
 import { AuthService } from './auth.service';
 import { UsersResponseDto } from 'src/users/dto';
-import { AuthLoginDto, AuthRegisterDto, AuthResponseDto } from './dto';
+import {
+  AuthForgotPasswordDto,
+  AuthLoginDto,
+  AuthRegisterDto,
+  AuthResetPasswordDto,
+} from './dto';
+import { PasswordResetService } from './password-reset.service';
+import {
+  REFRESH_TOKEN_COOKIE,
+  clearAuthCookies,
+  setAuthCookies,
+} from './cookie-options';
 
-const getCookieOptions = () => {
-  const isProd = process.env.NODE_ENV === 'production';
-
-  return {
-    httpOnly: true,
-    secure: isProd,
-    sameSite: isProd ? ('none' as const) : ('lax' as const),
-  };
-};
+const getRefreshToken = (req: ExpressRequest): string | undefined =>
+  req.cookies?.[REFRESH_TOKEN_COOKIE];
 
 @ApiTags('Auth')
 @ApiErrors()
 @Controller('auth')
 export class AuthController {
-  constructor(private authService: AuthService) {}
+  constructor(
+    private authService: AuthService,
+    private passwordResetService: PasswordResetService,
+  ) {}
 
   @Post('register')
   @ApiOperation({
@@ -53,11 +61,12 @@ export class AuthController {
   @Post('login')
   @ApiOperation({
     summary: 'Login user',
+    description:
+      'Sets access_token and refresh_token httpOnly cookies on success.',
   })
   @ApiResponse({
-    status: 200,
-    description: 'Returns JWT token',
-    type: AuthResponseDto,
+    status: 201,
+    description: 'Login successful, auth cookies are set',
   })
   @ApiResponse({
     status: 401,
@@ -67,15 +76,88 @@ export class AuthController {
     @Body() data: AuthLoginDto,
     @Res({ passthrough: true }) res: Response,
   ) {
-    const result = await this.authService.login(data);
+    const tokens = await this.authService.login(data);
 
-    res.cookie('access_token', result.access_token, {
-      ...getCookieOptions(),
-      maxAge: 24 * 60 * 60 * 1000,
-    });
+    setAuthCookies(res, tokens);
 
     return {
       message: 'Login successful',
+    };
+  }
+
+  @Post('refresh')
+  @HttpCode(200)
+  @ApiOperation({
+    summary: 'Refresh access token',
+    description:
+      'Uses refresh_token cookie, rotates it and sets a new pair of auth cookies.',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Tokens successfully refreshed',
+  })
+  @ApiResponse({
+    status: 401,
+    description: 'Refresh token is missing, invalid or expired',
+  })
+  async refresh(
+    @Request() req: ExpressRequest,
+    @Res({ passthrough: true }) res: Response,
+  ) {
+    try {
+      const tokens = await this.authService.refresh(getRefreshToken(req));
+
+      setAuthCookies(res, tokens);
+    } catch (error) {
+      clearAuthCookies(res);
+
+      throw error;
+    }
+
+    return {
+      message: 'Token refreshed',
+    };
+  }
+
+  @Post('forgot-password')
+  @HttpCode(200)
+  @ApiOperation({
+    summary: 'Request password reset link',
+    description:
+      'Sends a reset link to the email if an account exists. The response is the same either way.',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Request accepted',
+  })
+  async forgotPassword(@Body() data: AuthForgotPasswordDto) {
+    await this.passwordResetService.requestReset(data.email);
+
+    return {
+      message:
+        'If an account with this email exists, a reset link has been sent',
+    };
+  }
+
+  @Post('reset-password')
+  @HttpCode(200)
+  @ApiOperation({
+    summary: 'Set a new password using the reset link token',
+    description: 'Token is single-use. All active sessions are logged out.',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Password successfully changed',
+  })
+  @ApiResponse({
+    status: 400,
+    description: 'Reset link is invalid or has expired',
+  })
+  async resetPassword(@Body() data: AuthResetPasswordDto) {
+    await this.passwordResetService.resetPassword(data.token, data.password);
+
+    return {
+      message: 'Password has been changed',
     };
   }
 
@@ -99,13 +181,19 @@ export class AuthController {
   @Post('logout')
   @ApiOperation({
     summary: 'Logout user',
+    description: 'Revokes refresh token and clears auth cookies.',
   })
   @ApiResponse({
     status: 200,
     description: 'User successfully logged out',
   })
-  logout(@Res({ passthrough: true }) res: Response) {
-    res.clearCookie('access_token', getCookieOptions());
+  async logout(
+    @Request() req: ExpressRequest,
+    @Res({ passthrough: true }) res: Response,
+  ) {
+    await this.authService.logout(getRefreshToken(req));
+
+    clearAuthCookies(res);
 
     return {
       message: 'Logout successful',
