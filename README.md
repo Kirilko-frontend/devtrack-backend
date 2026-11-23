@@ -11,6 +11,7 @@ REST API for **DevTrack**, a job application tracker that replaces the messy Exc
 ## Features
 
 - Cookie-based JWT authentication (register, login, logout, current user)
+- Short-lived access token + rotating refresh token (stored hashed in DB, revoked on logout and password change)
 - Companies: create, edit, list, delete
 - Vacancies linked to companies, with statuses (`SAVED`, `APPLIED`, `INTERVIEWING`, `OFFERED`, `REJECTED`)
 - Vacancy status history (every status change is recorded)
@@ -50,7 +51,8 @@ Create a `.env` file in the project root:
 ```env
 DATABASE_URL=postgresql://user:password@localhost:5432/devtrack
 JWT_SECRET=your-long-random-secret
-JWT_EXPIRES_IN=1d
+JWT_EXPIRES_IN=15m
+REFRESH_TOKEN_EXPIRES_DAYS=7
 PORT=3000
 FRONTEND_URL=http://localhost:5173
 ```
@@ -59,7 +61,8 @@ FRONTEND_URL=http://localhost:5173
 |---|---|
 | `DATABASE_URL` | PostgreSQL connection string |
 | `JWT_SECRET` | Secret used to sign JWT tokens |
-| `JWT_EXPIRES_IN` | Token lifetime, e.g. `15m`, `1d` |
+| `JWT_EXPIRES_IN` | Access token lifetime, e.g. `15m`, `1h` (default `15m`) |
+| `REFRESH_TOKEN_EXPIRES_DAYS` | Refresh token lifetime in days (default `7`) |
 | `PORT` | Server port (Render sets this automatically) |
 | `FRONTEND_URL` | Allowed CORS origin (no trailing slash) |
 
@@ -93,7 +96,8 @@ The API will be available at `http://localhost:3000`.
 
 | Area | Endpoints |
 |---|---|
-| Auth | `POST /auth/register`, `POST /auth/login`, `GET /auth/me`, `POST /auth/logout` |
+| Auth | `POST /auth/register`, `POST /auth/login`, `POST /auth/refresh`, `GET /auth/me`, `POST /auth/logout` |
+| Users | `GET /users/me`, `PATCH /users/me`, `DELETE /users/me` |
 | Companies | CRUD under `/companies` |
 | Vacancies | CRUD under `/vacancies` |
 | Interviews | CRUD under `/interviews` |
