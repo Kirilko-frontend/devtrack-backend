@@ -70,6 +70,38 @@ class DashboardVacancyStatusesDto {
   rejected: number;
 }
 
+class DashboardFunnelDto {
+  @ApiProperty({
+    example: 30,
+    description: 'All tracked vacancies (top of the funnel)',
+  })
+  tracked: number;
+
+  @ApiProperty({
+    example: 22,
+    description: 'Vacancies that ever reached APPLIED or a later stage',
+  })
+  applied: number;
+
+  @ApiProperty({
+    example: 9,
+    description: 'Vacancies that ever reached INTERVIEWING or a later stage',
+  })
+  interviewing: number;
+
+  @ApiProperty({
+    example: 2,
+    description: 'Vacancies that ever reached OFFERED',
+  })
+  offered: number;
+
+  @ApiProperty({
+    example: 6,
+    description: 'Vacancies currently REJECTED (at any stage)',
+  })
+  rejected: number;
+}
+
 class DashboardInterviewCompanyDto {
   @ApiProperty({
     example: 1,
@@ -210,6 +242,12 @@ export class DashboardResponseDto {
     type: DashboardVacancyStatusesDto,
   })
   vacancyStatuses: DashboardVacancyStatusesDto;
+
+  @ApiProperty({
+    type: DashboardFunnelDto,
+    description: 'How many vacancies ever reached each stage',
+  })
+  funnel: DashboardFunnelDto;
 
   @ApiProperty({
     type: [DashboardInterviewDto],

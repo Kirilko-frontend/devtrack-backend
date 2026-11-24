@@ -1,6 +1,20 @@
 import { Injectable } from '@nestjs/common';
+import { VacancyStatus } from '@prisma/client';
 
 import { PrismaService } from 'src/prisma/prisma.service';
+
+/**
+ * Funnel stages in order. REJECTED is not a stage: it can happen after any of them.
+ */
+const FUNNEL_STAGES: VacancyStatus[] = [
+  VacancyStatus.SAVED,
+  VacancyStatus.APPLIED,
+  VacancyStatus.INTERVIEWING,
+  VacancyStatus.OFFERED,
+];
+
+const stageRank = (status: VacancyStatus | null) =>
+  status ? FUNNEL_STAGES.indexOf(status) : -1;
 
 @Injectable()
 export class DashboardService {
@@ -14,6 +28,7 @@ export class DashboardService {
       applicationHistory,
       statsChanges,
       recentVacancies,
+      funnel,
     ] = await Promise.all([
       this.getStats(userId),
       this.getVacancyStatuses(userId),
@@ -21,6 +36,7 @@ export class DashboardService {
       this.getApplicationHistory(userId),
       this.getStatsChanges(userId),
       this.getRecentVacancies(userId),
+      this.getFunnel(userId),
     ]);
 
     const applicationActivity = this.groupApplicationsByDay(applicationHistory);
@@ -29,9 +45,80 @@ export class DashboardService {
       stats,
       statsChanges,
       vacancyStatuses,
+      funnel,
       upcomingInterviews,
       applicationActivity,
       recentVacancies,
+    };
+  }
+
+  /**
+   * Application funnel: how many vacancies ever reached each stage.
+   *
+   * The current status alone is not enough — a REJECTED vacancy may have
+   * reached the final interview first. So the furthest stage of every vacancy
+   * is taken from its current status, its status history, appliedAt
+   * (it was applied to) and its interviews (it reached interviewing).
+   * A rejection without any other trace still means the user had applied.
+   */
+  private async getFunnel(userId: number) {
+    const vacancies = await this.prisma.vacancy.findMany({
+      where: {
+        userId,
+      },
+      select: {
+        status: true,
+        appliedAt: true,
+        vacancyHistories: {
+          select: {
+            oldStatus: true,
+            newStatus: true,
+          },
+        },
+        _count: {
+          select: {
+            interviews: true,
+          },
+        },
+      },
+    });
+
+    // reached[i] = vacancies whose furthest stage is FUNNEL_STAGES[i] or later.
+    const reached = FUNNEL_STAGES.map(() => 0);
+    let rejected = 0;
+
+    for (const vacancy of vacancies) {
+      const ranks = [
+        stageRank(vacancy.status),
+        ...vacancy.vacancyHistories.flatMap((history) => [
+          stageRank(history.oldStatus),
+          stageRank(history.newStatus),
+        ]),
+        vacancy.appliedAt ? stageRank(VacancyStatus.APPLIED) : -1,
+        vacancy._count.interviews > 0
+          ? stageRank(VacancyStatus.INTERVIEWING)
+          : -1,
+      ];
+
+      if (vacancy.status === VacancyStatus.REJECTED) {
+        rejected++;
+        ranks.push(stageRank(VacancyStatus.APPLIED));
+      }
+
+      // Every tracked vacancy is at least SAVED.
+      const furthest = Math.max(0, ...ranks);
+
+      for (let rank = 0; rank <= furthest; rank++) {
+        reached[rank]++;
+      }
+    }
+
+    return {
+      tracked: reached[0],
+      applied: reached[1],
+      interviewing: reached[2],
+      offered: reached[3],
+      rejected,
     };
   }
 
